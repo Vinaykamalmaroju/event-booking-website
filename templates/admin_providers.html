@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Providers</title>
+
+   <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/admin_providers.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+        <a href="/admin">Dashboard</a>
+        <a href="/messages">Messages</a>
+        <a href="/logout">Logout</a>
+
+    </nav>
+
+</header>
+
+<div class="admin-container">
+
+    <h1>Service Provider Management</h1>
+
+    <p>Approve or remove registered providers.</p>
+
+    <table>
+
+        <tr>
+            <th>ID</th>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Service</th>
+            <th>Experience</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+
+        {% for provider in providers %}
+
+        <tr>
+
+            <td>{{ provider[0] }}</td>
+
+            <td>
+
+                <img
+                    src="{{ url_for('static', filename='uploads/' + provider[8]) }}"
+                    width="70"
+                    height="70"
+                    style="border-radius:50%;object-fit:cover;">
+
+            </td>
+
+            <td>{{ provider[1] }}</td>
+
+            <td>{{ provider[2] }}</td>
+
+            <td>{{ provider[4] }}</td>
+
+            <td>{{ provider[5] }}</td>
+
+            <td>{{ provider[6] }}</td>
+
+            <td>
+
+                {% if provider[9] == "Approved" %}
+
+                    <span style="color:green;font-weight:bold;">
+                        ✔ Approved
+                    </span>
+
+                {% else %}
+
+                    <span style="color:orange;font-weight:bold;">
+                        Pending
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if provider[9] != "Approved" %}
+
+                    <a href="/approve-provider/{{ provider[0] }}">
+                        <button class="approve-btn">
+                            Approve
+                        </button>
+                    </a>
+
+                {% endif %}
+
+                <a href="/delete-provider/{{ provider[0] }}"
+                   onclick="return confirm('Delete this provider?')">
+
+                    <button class="delete-btn">
+                        Delete
+                    </button>
+
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    <br>
+
+    <a href="/admin" class="edit-btn">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

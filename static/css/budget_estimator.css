@@ -1,0 +1,501 @@
+/* ==========================================
+   AI Budget Estimator
+========================================== */
+
+body{
+
+    margin:0;
+
+    padding:40px;
+
+    font-family:Arial, Helvetica, sans-serif;
+
+    background:#f4f8fc;
+
+}
+
+/* ==========================================
+Container
+========================================== */
+
+.container{
+
+    width:90%;
+
+    max-width:900px;
+
+    margin:auto;
+
+    background:white;
+
+    padding:40px;
+
+    border-radius:18px;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+
+    animation:fadeUp .5s ease;
+
+}
+
+.container h1{
+
+    text-align:center;
+
+    color:#0d6efd;
+
+    margin-bottom:30px;
+
+    font-size:38px;
+
+}
+
+/* ==========================================
+Form
+========================================== */
+
+form{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+label{
+
+    margin-top:18px;
+
+    margin-bottom:8px;
+
+    font-size:17px;
+
+    font-weight:bold;
+
+    color:#333;
+
+}
+
+input,
+select{
+
+    padding:14px;
+
+    border:1px solid #ccc;
+
+    border-radius:10px;
+
+    font-size:16px;
+
+    transition:.3s;
+
+}
+
+input:focus,
+select:focus{
+
+    outline:none;
+
+    border-color:#0d6efd;
+
+    box-shadow:0 0 10px rgba(13,110,253,.2);
+
+}
+
+button{
+
+    margin-top:30px;
+
+    padding:15px;
+
+    background:#0d6efd;
+
+    color:white;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+button:hover{
+
+    background:#084db7;
+
+    transform:translateY(-3px);
+
+}
+
+/* ==========================================
+Result Section
+========================================== */
+
+.result{
+
+    margin-top:40px;
+
+    background:#f8fbff;
+
+    border-radius:18px;
+
+    padding:35px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+
+}
+
+.result h2{
+
+    color:#0d6efd;
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+}
+
+.result hr{
+
+    margin:25px 0;
+
+    border:none;
+
+    border-top:1px solid #ddd;
+
+}
+
+/* ==========================================
+Cost Cards
+========================================== */
+
+.cost-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:20px;
+
+    margin-top:25px;
+
+}
+
+.cost-card{
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    text-align:center;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.cost-card:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:0 15px 30px rgba(0,0,0,.12);
+
+}
+
+.cost-card h3{
+
+    color:#0d6efd;
+
+    margin-bottom:12px;
+
+    font-size:20px;
+
+}
+
+.cost-card p{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    color:#333;
+
+}
+
+/* ==========================================
+Total Cost
+========================================== */
+
+.total-box{
+
+    margin-top:30px;
+
+    background:#0d6efd;
+
+    color:white;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    text-align:center;
+
+}
+
+.total-box h2{
+
+    color:white;
+
+    font-size:34px;
+
+    margin-bottom:10px;
+
+}
+
+.total-box p{
+
+    font-size:18px;
+
+}
+
+/* ==========================================
+Budget Status
+========================================== */
+
+.status{
+
+    margin-top:30px;
+
+    text-align:center;
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    padding:18px;
+
+    border-radius:12px;
+
+}
+
+.success{
+
+    background:#d1f7dd;
+
+    color:#198754;
+
+}
+
+.warning{
+
+    background:#ffe7cc;
+
+    color:#d97706;
+
+}
+
+/* ==========================================
+Back Button
+========================================== */
+
+.back-btn{
+
+    text-align:center;
+
+    margin-top:35px;
+
+}
+
+.back-btn a{
+
+    text-decoration:none;
+
+}
+
+.back-btn button{
+
+    width:250px;
+
+}
+
+/* ==========================================
+Animation
+========================================== */
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(40px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+Responsive
+========================================== */
+
+@media(max-width:768px){
+
+.container{
+
+    width:95%;
+
+    padding:25px;
+
+}
+
+.container h1{
+
+    font-size:30px;
+
+}
+
+button{
+
+    font-size:16px;
+
+}
+
+.cost-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+}
+
+/* ==========================================
+Animated Cost Cards
+========================================== */
+
+.icon{
+
+    font-size:55px;
+
+    margin-bottom:15px;
+
+}
+
+.cost-card{
+
+    animation:popUp .6s ease;
+
+}
+
+.cost-card:nth-child(1){
+
+animation-delay:.1s;
+
+}
+
+.cost-card:nth-child(2){
+
+animation-delay:.2s;
+
+}
+
+.cost-card:nth-child(3){
+
+animation-delay:.3s;
+
+}
+
+.cost-card:nth-child(4){
+
+animation-delay:.4s;
+
+}
+
+.cost-card:nth-child(5){
+
+animation-delay:.5s;
+
+}
+
+.cost-card:nth-child(6){
+
+animation-delay:.6s;
+
+}
+
+.cost-card{
+
+    opacity:0;
+
+    animation-fill-mode:forwards;
+
+}
+
+@keyframes popUp{
+
+0%{
+
+opacity:0;
+
+transform:translateY(40px) scale(.8);
+
+}
+
+100%{
+
+opacity:1;
+
+transform:translateY(0) scale(1);
+
+}
+
+}
+
+.cost-card:hover{
+
+background:#0d6efd;
+
+color:white;
+
+transform:translateY(-10px) scale(1.05);
+
+}
+
+.cost-card:hover h3{
+
+color:white;
+
+}
+
+.cost-card:hover p{
+
+color:white;
+
+}
+
+.total-box{
+
+animation:fadeUp .8s ease;
+
+}
+
+.status{
+
+animation:fadeUp 1s ease;
+
+}

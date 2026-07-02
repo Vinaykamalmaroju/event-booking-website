@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Event Assistant</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chat.css') }}">
+
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <div class="chat-header">
+
+        <h1>🤖 Event Booking AI Assistant</h1>
+
+        <p>Ask anything about bookings, payments, services and providers.</p>
+
+    </div>
+
+    <div id="chat-box" class="chat-box">
+
+
+<div class="suggestions">
+
+    <button onclick="quickQuestion('How do I book an event?')">
+
+        📅 How do I book an event?
+
+    </button>
+
+    <button onclick="quickQuestion('What services do you provide?')">
+
+        🎉 Services
+
+    </button>
+
+    <button onclick="quickQuestion('How do I make payment?')">
+
+        💳 Payment
+
+    </button>
+
+    <button onclick="quickQuestion('How can I become a provider?')">
+
+        👨‍💼 Become Provider
+
+    </button>
+
+    <button onclick="quickQuestion('Contact support')">
+
+        📞 Contact
+
+    </button>
+
+</div>
+
+
+
+        <div class="bot-message">
+
+            Hello 👋<br><br>
+
+            I'm your Event Booking Assistant.<br>
+
+            Ask me anything!
+
+        </div>
+
+    </div>
+
+    <div class="chat-input">
+
+        <input
+            type="text"
+            id="message"
+            placeholder="Type your question here...">
+
+        <button type="button" onclick="sendMessage()">
+
+             Send
+
+        </button>
+    </div>
+
+</div>
+
+<script>
+
+function sendMessage() {
+
+    let input = document.getElementById("message");
+
+    let message = input.value.trim();
+
+    if (message === "") {
+
+        alert("Please enter a message.");
+
+        return;
+
+    }
+
+    let box = document.getElementById("chat-box");
+
+    // User Message
+    box.innerHTML += `
+        <div class="user-message">
+            ${message}
+        </div>
+    `;
+
+    box.scrollTop = box.scrollHeight;
+
+    fetch("/chatbot", {
+
+        method: "POST",
+
+        headers: {
+
+            "Content-Type": "application/json"
+
+        },
+
+        body: JSON.stringify({
+
+            message: message
+
+        })
+
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        box.innerHTML += `
+            <div class="bot-message">
+                ${data.reply}
+            </div>
+        `;
+
+        box.scrollTop = box.scrollHeight;
+
+    })
+
+    .catch(error => {
+
+        console.log(error);
+
+        box.innerHTML += `
+            <div class="bot-message">
+                ❌ Server Error
+            </div>
+        `;
+
+    });
+
+    input.value = "";
+
+}
+
+function quickQuestion(text){
+
+    document.getElementById("message").value = text;
+
+    sendMessage();
+
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    document.getElementById("message").addEventListener("keypress", function(e){
+
+        if(e.key === "Enter"){
+
+            sendMessage();
+
+        }
+
+    });
+
+});
+
+</script>
+
+
+<div class="popular-section">
+
+    <h3>
+
+        💡 Popular Questions
+
+    </h3>
+
+    <div class="popular-grid">
+
+        <div class="popular-card"
+             onclick="quickQuestion('Book Wedding')">
+
+            📅
+
+            <span>Book Wedding</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Book Birthday')">
+
+            🎂
+
+            <span>Book Birthday</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Photography Packages')">
+
+            📸
+
+            <span>Photography Packages</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Decoration Services')">
+
+            🎈
+
+            <span>Decoration Services</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Payment Options')">
+
+            💳
+
+            <span>Payment Options</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Available Coupons')">
+
+            🎟
+
+            <span>Available Coupons</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Download Invoice')">
+
+            📄
+
+            <span>Download Invoice</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Track Booking')">
+
+            🚚
+
+            <span>Track Booking</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Provider Registration')">
+
+            ⭐
+
+            <span>Become Provider</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Customer Registration')">
+
+            👤
+
+            <span>Customer Registration</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Reviews')">
+
+            🌟
+
+            <span>Customer Reviews</span>
+
+        </div>
+
+        <div class="popular-card"
+             onclick="quickQuestion('Contact Support')">
+
+            📞
+
+            <span>Contact Support</span>
+
+        </div>
+
+    </div>
+
+</div>
+
+</script>
+
+<!-- Floating Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</body>
+
+</html>

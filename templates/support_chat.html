@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Live Support</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>💬 Live Customer Support</h1>
+
+    <p>
+
+        Our support team will respond shortly.
+
+    </p>
+
+    <form method="POST">
+
+        <label>Name</label>
+
+        <input
+        type="text"
+        name="name"
+        required>
+
+        <label>Email</label>
+
+        <input
+        type="email"
+        name="email"
+        required>
+
+        <label>Message</label>
+
+        <textarea
+        name="message"
+        rows="6"
+        required></textarea>
+
+        <button type="submit">
+
+            Send Message
+
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+
+</html>

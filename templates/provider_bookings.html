@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>My Bookings</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/provider_bookings.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="fade-in">
+
+<header class="fade-in">
+
+    <h1>Provider Portal</h1>
+
+    <nav>
+
+        <a href="/provider-dashboard">Dashboard</a>
+
+        <a href="/provider-edit">Edit Profile</a>
+
+        <a href="/provider-logout">Logout</a>
+
+    </nav>
+
+</header>
+
+<div class="booking-page slide-up">
+
+    <h1 class="page-title fade-in">
+
+        📅 My Bookings
+
+    </h1>
+
+    <!-- ===================================== -->
+    <!-- PROVIDER EARNINGS -->
+    <!-- ===================================== -->
+
+    <div class="earning-container">
+
+        <div class="earning-card">
+
+            <h3>Total Bookings</h3>
+
+            <h2>{{ total_bookings }}</h2>
+
+        </div>
+
+        <div class="earning-card">
+
+            <h3>Total Earnings</h3>
+
+            <h2>₹{{ total_earnings }}</h2>
+
+        </div>
+
+        <div class="earning-card">
+
+            <h3>This Month</h3>
+
+            <h2>₹{{ month_earnings }}</h2>
+
+        </div>
+
+    </div>
+
+    {% if bookings %}
+
+    <div class="booking-grid">
+
+        {% for booking in bookings %}
+
+        <div class="booking-card hover-card zoom">
+
+            <div class="booking-header">
+
+                <h2>
+
+                    {{ booking[1] }}
+
+                </h2>
+
+                {% if booking[7] == "Approved" %}
+
+                <span class="approved">
+
+                    ✔ Approved
+
+                </span>
+
+                {% else %}
+
+                <span class="pending">
+
+                    ⏳ Pending
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <hr>
+
+            <p>
+
+                <strong>📧 Customer Email</strong><br>
+
+                {{ booking[2] }}
+
+            </p>
+
+            <p>
+
+                <strong>📞 Phone</strong><br>
+
+                {{ booking[3] }}
+
+            </p>
+
+            <p>
+
+                <strong>🎯 Service</strong><br>
+
+                {{ booking[5] }}
+
+            </p>
+
+            <p>
+
+                <strong>📅 Event Date</strong><br>
+
+                {{ booking[4] }}
+
+            </p>
+
+            <p>
+
+                <strong>💰 Booking Amount</strong><br>
+
+                ₹{{ booking[13] }}
+
+            </p>
+
+            <p>
+
+                <strong>Status</strong><br>
+
+                {{ booking[7] }}
+
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="no-booking fade-in">
+
+        <h2>No Bookings Yet</h2>
+
+        <p>You haven't received any bookings.</p>
+
+    </div>
+
+    {% endif %}
+
+    <div class="back-btn">
+
+        <a href="/provider-dashboard">
+
+            <button class="btn-hover">
+
+                ← Back to Dashboard
+
+            </button>
+
+        </a>
+
+    </div>
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

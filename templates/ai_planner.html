@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>AI Event Planner</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='css/event_planner.css') }}">
+
+</head>
+
+<body>
+
+<div class="planner">
+
+<h1>🤖 AI Event Planner</h1>
+
+<form action="/generate-plan" method="POST">
+
+<label>Event Type</label>
+
+<select name="event">
+
+<option>Wedding</option>
+
+<option>Birthday</option>
+
+<option>Corporate</option>
+
+<option>Engagement</option>
+
+<option>Reception</option>
+
+</select>
+
+<label>Number of Guests</label>
+
+<input
+type="number"
+name="guests"
+required>
+
+<label>Budget</label>
+
+<input
+type="number"
+name="budget"
+required>
+
+<label>Location</label>
+
+<input
+type="text"
+name="location"
+required>
+
+<label>Theme</label>
+
+<input
+type="text"
+name="theme"
+required>
+
+<label>Event Date</label>
+
+<input
+type="date"
+name="date"
+required>
+
+<button>
+
+Generate AI Plan
+
+</button>
+
+</form>
+
+</div>
+
+</body>
+
+</html>

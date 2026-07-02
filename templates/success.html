@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Booking Successful</title>
+
+  <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/success.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+    <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="success-page">
+
+<header>
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/booking">Book Event</a>
+
+        <a href="/providers">Providers</a>
+
+        <a href="/contact">Contact</a>
+
+    </nav>
+
+</header>
+
+<section class="success-card">
+
+    <div class="success-icon">
+
+        ✅
+
+    </div>
+
+    <h1>
+
+        Booking Successful!
+
+    </h1>
+
+    <p>
+
+        Thank you for choosing our Event Booking Website.
+
+    </p>
+
+    <p>
+
+        Your booking request has been submitted successfully.
+
+    </p>
+
+    <p>
+
+        Our team will review your booking and contact you shortly.
+
+    </p>
+
+    <div class="profile-buttons">
+
+        <a href="/">
+
+            <button class="back-btn">
+
+                Back to Home
+
+            </button>
+
+        </a>
+
+        <a href="/booking">
+
+            <button class="book-btn">
+
+                Book Another Event
+
+            </button>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Admin Analytics</title>
+
+<style>
+
+body{
+    font-family:Arial;
+    background:#f2f2f2;
+    margin:30px;
+}
+
+h1{
+    text-align:center;
+}
+
+.card{
+
+    background:white;
+
+    padding:20px;
+
+    margin-bottom:30px;
+
+    border-radius:10px;
+
+    box-shadow:0px 0px 10px lightgray;
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+table th{
+
+    background:#007bff;
+
+    color:white;
+
+    padding:10px;
+}
+
+table td{
+
+    padding:10px;
+
+    border:1px solid #ddd;
+
+    text-align:center;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Admin Analytics Dashboard</h1>
+
+<div class="card">
+
+<h2>Monthly Bookings</h2>
+
+<table>
+
+<tr>
+
+<th>Month</th>
+
+<th>Total Bookings</th>
+
+</tr>
+
+{% for row in monthly_bookings %}
+
+<tr>
+
+<td>{{ row["month"] }}</td>
+
+<td>{{ row["total"] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+<div class="card">
+
+<h2>Monthly Revenue</h2>
+
+<table>
+
+<tr>
+
+<th>Month</th>
+
+<th>Revenue</th>
+
+</tr>
+
+{% for row in monthly_revenue %}
+
+<tr>
+
+<td>{{ row["month"] }}</td>
+
+<td>₹{{ row["revenue"] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Event Booking Website</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+  <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/index.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/booking">Book Event</a>
+        
+        <a href="/track-booking">Track Booking</a>
+
+        <a href="/payment">Payment</a>
+
+        <a href="/contact">Contact</a>
+
+        <a href="/provider-register">Become a Provider</a>
+
+        <a href="/provider-login">Provider Login</a>
+
+        <a href="/providers">View Providers</a>
+
+        <a href="/booking-history">Booking History</a>
+
+        <a href="/customer-register">Customer Register</a>
+
+        <a href="/admin-login">Admin Login</a>
+
+    </nav>
+
+</header>
+
+<section class="hero fade-in">
+
+    <h2>
+
+        Make Every Event Memorable
+
+    </h2>
+
+    <p>
+
+        Book trusted photographers, videographers, caterers,
+        decorators and other event professionals with ease.
+
+    </p>
+
+    <a href="/booking">
+
+        <button class="fade-in">
+
+            Book Your Event
+
+        </button>
+
+    </a>
+
+</section>
+
+<section class="services">
+
+    <h2>
+
+        Our Services
+
+    </h2>
+
+    <div class="service-container">
+
+        <div class="card hover-card">
+
+            <h3>📸 Wedding Photography</h3>
+
+            <p>
+
+                Professional photographers to capture every
+                unforgettable moment.
+
+            </p>
+
+        </div>
+
+        <div class="card hover-card">
+
+            <h3>🎥 Videography</h3>
+
+            <p>
+
+                High-quality cinematic videos to preserve
+                your memories forever.
+
+            </p>
+
+        </div>
+
+        <div class="card hover-card">
+
+            <h3>🍽 Catering</h3>
+
+            <p>
+
+                Delicious food menus prepared by experienced
+                catering professionals.
+
+            </p>
+
+        </div>
+
+        <div class="card hover-card">
+
+            <h3>🎉 Decoration</h3>
+
+            <p>
+
+                Elegant decorations and creative themes
+                for every occasion.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="services">
+
+    <h2>
+
+        Why Choose Us?
+
+    </h2>
+
+    <div class="service-container">
+
+    <div class="card hover-card">
+            <h3>⭐ Trusted Professionals</h3>
+
+            <p>
+
+                Verified and experienced service providers.
+
+            </p>
+
+        </div>
+
+        <div class="card hover-card">
+
+            <h3>⚡ Easy Booking</h3>
+
+            <p>
+
+                Book your event online in just a few clicks.
+
+            </p>
+
+        </div>
+
+        <div class="card hover-card">
+
+            <h3>💰 Affordable Pricing</h3>
+
+            <p>
+
+                Get quality services at competitive prices.
+
+            </p>
+
+        </div>
+
+        <div class="card hover-card">
+
+            <h3>📞 Customer Support</h3>
+
+            <p>
+
+                Dedicated support to help before and after booking.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="providers-home fade-in">
+
+    <h2>
+
+        Our Featured Providers
+
+    </h2>
+
+<div class="provider-container">
+
+{% if providers %}
+
+    {% for provider in providers %}
+
+    <div class="provider-card fade-up">
+
+        <img
+            src="{{ url_for('static', filename='uploads/' + provider[8]) }}"
+            class="provider-image"
+            alt="{{ provider[1] }}">
+
+        <div class="provider-info">
+
+            <h3>{{ provider[1] }}</h3>
+
+            <span class="service-badge">
+
+                {{ provider[5] }}
+
+            </span>
+
+            <p>
+
+                ⭐⭐⭐⭐⭐
+
+            </p>
+
+            <p>
+
+                {{ provider[6] }} Years Experience
+
+            </p>
+
+            <a href="/provider/{{ provider[0] }}">
+
+                <button>
+
+                    View Profile
+
+                </button>
+
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+{% else %}
+
+<h2>
+
+No Providers Found
+
+</h2>
+
+{% endif %}
+
+</div>
+</section>
+<section class="reviews-home fade-in">
+    <h2>
+
+        What Our Customers Say
+
+    </h2>
+
+    <div class="review-container">
+
+        {% if reviews %}
+
+            {% for review in reviews %}
+
+            <div class="review-card hover-card">
+
+                <h3>
+
+                    {{ review[0] }}
+
+                </h3>
+
+                <p>
+
+                    ⭐ {{ review[1] }}/5
+
+                </p>
+
+                <p>
+
+                    "{{ review[2] }}"
+
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <h3>
+
+                No Reviews Available
+
+            </h3>
+
+        {% endif %}
+
+    </div>
+
+    <br>
+
+    <a href="/reviews">
+
+        <button class="btn-hover">
+
+            Read All Reviews
+
+        </button>
+
+    </a>
+
+</section>
+<section class="gallery-section fade-in">
+    <h2>Our Event Gallery</h2>
+
+    <p>
+        Explore some of our successfully organized events.
+    </p>
+
+    <div class="gallery-container">
+
+    <img class="zoom" src="{{ url_for('static', filename='gallery/wedding1.jpg') }}"
+         onclick="openImage(this.src)"
+         alt="Wedding">
+
+    <img class="zoom" src="{{ url_for('static', filename='gallery/wedding2.jpg') }}"
+         onclick="openImage(this.src)"
+         alt="Wedding">
+
+    <img class="zoom" src="{{ url_for('static', filename='gallery/birthday.jpg') }}"
+         onclick="openImage(this.src)"
+         alt="Birthday">
+
+    <img class="zoom" src="{{ url_for('static', filename='gallery/reception.jpg') }}"
+         onclick="openImage(this.src)"
+         alt="Reception">
+
+    <img class="zoom" src="{{ url_for('static', filename='gallery/engagement.jpg') }}"
+         onclick="openImage(this.src)"
+         alt="Engagement">
+
+    <img class="zoom"  src="{{ url_for('static', filename='gallery/corporate.jpg') }}"
+         onclick="openImage(this.src)"
+         alt="Corporate">
+
+    <img class="zoom" src="{{ url_for('static', filename='gallery/babyshower.jpg') }}"
+         onclick="openImage(this.src)"
+         alt="Baby Shower">
+
+    <img class="zoom" src="{{ url_for('static', filename='gallery/haldi.jpg') }}"
+         onclick="openImage(this.src)"
+         alt="Haldi">
+
+</div>
+
+</section>
+<div id="imageModal" class="image-modal">
+
+    <span class="close-btn" onclick="closeImage()">
+
+        &times;
+
+    </span>
+
+    <img id="modalImage">
+
+</div>
+<footer class="fade-in">
+
+    <p>
+
+        © 2026 Event Booking Website | Designed for Major Project
+
+    </p>
+
+</footer>
+<script>
+
+function openImage(src){
+
+    document.getElementById("imageModal").style.display="flex";
+
+    document.getElementById("modalImage").src=src;
+
+}
+
+function closeImage(){
+
+    document.getElementById("imageModal").style.display="none";
+
+}
+
+window.onclick=function(event){
+
+    const modal=document.getElementById("imageModal");
+
+    if(event.target===modal){
+
+        closeImage();
+
+    }
+
+}
+
+</script>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

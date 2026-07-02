@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Booking | Event Booking Website</title>
+
+  <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/edit.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/admin">Dashboard</a>
+
+        <a href="/messages">Messages</a>
+
+        <a href="/logout">Logout</a>
+
+    </nav>
+
+</header>
+
+<div class="booking-form">
+
+    <h1>Edit Booking</h1>
+
+    <p>
+
+        Update the booking information and click
+        <strong>Update Booking</strong> to save the changes.
+
+    </p>
+
+    <form method="POST"
+          action="/update/{{ booking[0] }}">
+
+        <input
+            type="text"
+            name="name"
+            value="{{ booking[1] }}"
+            placeholder="Full Name"
+            required>
+
+        <input
+            type="email"
+            name="email"
+            value="{{ booking[2] }}"
+            placeholder="Email Address"
+            required>
+
+        <input
+            type="tel"
+            name="phone"
+            value="{{ booking[3] }}"
+            placeholder="Phone Number"
+            required>
+
+        <input
+            type="date"
+            name="date"
+            value="{{ booking[4] }}"
+            required>
+
+        <select
+            name="service"
+            required>
+
+            <option value="Wedding Photography"
+                {% if booking[5]=="Wedding Photography" %}
+                selected
+                {% endif %}>
+                Wedding Photography
+            </option>
+
+            <option value="Videography"
+                {% if booking[5]=="Videography" %}
+                selected
+                {% endif %}>
+                Videography
+            </option>
+
+            <option value="Catering"
+                {% if booking[5]=="Catering" %}
+                selected
+                {% endif %}>
+                Catering
+            </option>
+
+            <option value="Decoration"
+                {% if booking[5]=="Decoration" %}
+                selected
+                {% endif %}>
+                Decoration
+            </option>
+
+        </select>
+
+        <button type="submit">
+
+            Update Booking
+
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="/admin"
+       class="edit-btn">
+
+        ← Back to Dashboard
+
+    </a>
+
+</div>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

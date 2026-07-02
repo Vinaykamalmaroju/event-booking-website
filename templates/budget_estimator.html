@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>AI Budget Estimator</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/budget_estimator.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>💰 AI Budget Estimator</h1>
+
+<form method="POST">
+
+<label>Event Type</label>
+
+<select name="event">
+
+<option>Wedding</option>
+<option>Birthday</option>
+<option>Corporate</option>
+<option>Reception</option>
+<option>Engagement</option>
+
+</select>
+
+<label>Guests</label>
+
+<input
+type="number"
+name="guests"
+required>
+
+<label>Your Budget (₹)</label>
+
+<input
+type="number"
+name="budget"
+required>
+
+<button type="submit">
+
+Estimate Budget
+
+</button>
+
+</form>
+
+{% if result %}
+
+<div class="result">
+
+    <h2>🤖 AI Budget Report</h2>
+
+    <div class="cost-grid">
+
+        <div class="cost-card">
+            <div class="icon">🏛️</div>
+            <h3>Venue</h3>
+            <p>₹ {{ result.venue }}</p>
+        </div>
+
+        <div class="cost-card">
+            <div class="icon">🎈</div>
+            <h3>Decoration</h3>
+            <p>₹ {{ result.decoration }}</p>
+        </div>
+
+        <div class="cost-card">
+            <div class="icon">🍽️</div>
+            <h3>Catering</h3>
+            <p>₹ {{ result.catering }}</p>
+        </div>
+
+        <div class="cost-card">
+            <div class="icon">📸</div>
+            <h3>Photography</h3>
+            <p>₹ {{ result.photography }}</p>
+        </div>
+
+        <div class="cost-card">
+            <div class="icon">🎵</div>
+            <h3>Entertainment</h3>
+            <p>₹ {{ result.entertainment }}</p>
+        </div>
+
+        <div class="cost-card">
+            <div class="icon">📦</div>
+            <h3>Miscellaneous</h3>
+            <p>₹ {{ result.miscellaneous }}</p>
+        </div>
+
+    </div>
+
+    <div class="total-box">
+
+        <h2>💰 Total Estimated Cost</h2>
+
+        <h1>₹ {{ result.total }}</h1>
+
+    </div>
+
+    {% if "sufficient" in result.status %}
+
+        <div class="status success">
+
+            {{ result.status }}
+
+        </div>
+
+    {% else %}
+
+        <div class="status warning">
+
+            {{ result.status }}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+</div>
+
+</body>
+
+</html>

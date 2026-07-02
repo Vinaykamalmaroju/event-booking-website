@@ -1,0 +1,224 @@
+
+/* ==========================================
+   CONTACT MESSAGES PAGE
+========================================== */
+
+body{
+
+    margin:0;
+
+    padding:0;
+
+    font-family:'Poppins',sans-serif;
+
+    background:#f4f7fb;
+
+}
+
+/* ================= CONTAINER ================= */
+
+.messages-container{
+
+    width:95%;
+
+    max-width:1400px;
+
+    margin:40px auto;
+
+}
+
+.messages-container h1{
+
+    text-align:center;
+
+    color:#0f172a;
+
+    font-size:38px;
+
+    margin-bottom:35px;
+
+}
+
+/* ================= TABLE ================= */
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    background:white;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+}
+
+thead{
+
+    background:#2563eb;
+
+    color:white;
+
+}
+
+th{
+
+    padding:18px;
+
+    font-size:15px;
+
+    text-transform:uppercase;
+
+    letter-spacing:.5px;
+
+}
+
+td{
+
+    padding:16px;
+
+    text-align:center;
+
+    border-bottom:1px solid #eee;
+
+    color:#444;
+
+    font-size:15px;
+
+}
+
+tbody tr{
+
+    transition:.3s;
+
+}
+
+tbody tr:hover{
+
+    background:#f8fbff;
+
+}
+
+/* ================= MESSAGE COLUMN ================= */
+
+.message{
+
+    text-align:left;
+
+    max-width:350px;
+
+    word-wrap:break-word;
+
+    line-height:1.7;
+
+}
+
+/* ================= BUTTONS ================= */
+
+.back-btn,
+
+.delete-btn{
+
+    display:inline-block;
+
+    padding:10px 20px;
+
+    text-decoration:none;
+
+    color:white;
+
+    border-radius:10px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.back-btn{
+
+    background:#2563eb;
+
+}
+
+.delete-btn{
+
+    background:#dc2626;
+
+}
+
+.back-btn:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-3px);
+
+}
+
+.delete-btn:hover{
+
+    background:#b91c1c;
+
+    transform:translateY(-3px);
+
+}
+
+/* ================= ACTION SECTION ================= */
+
+.actions{
+
+    margin-top:30px;
+
+    text-align:center;
+
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1200px){
+
+table{
+
+    display:block;
+
+    overflow-x:auto;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.messages-container{
+
+    width:98%;
+
+}
+
+.messages-container h1{
+
+    font-size:28px;
+
+}
+
+th,
+
+td{
+
+    padding:12px;
+
+    font-size:14px;
+
+}
+
+.message{
+
+    min-width:250px;
+
+}
+
+}

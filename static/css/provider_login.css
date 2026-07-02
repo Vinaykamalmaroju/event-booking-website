@@ -1,0 +1,181 @@
+/* =========================================
+   PROVIDER LOGIN PAGE
+========================================= */
+
+body{
+
+    background:linear-gradient(135deg,#0f172a,#2563eb);
+
+    min-height:100vh;
+
+}
+
+/* Center Card */
+
+.provider-login-container{
+
+    width:430px;
+
+    margin:80px auto;
+
+    background:#fff;
+
+    padding:45px;
+
+    border-radius:22px;
+
+    box-shadow:0 20px 45px rgba(0,0,0,.25);
+
+    text-align:center;
+
+    animation:fadeIn .8s;
+
+}
+
+/* Heading */
+
+.provider-login-container h1{
+
+    color:#0f172a;
+
+    font-size:36px;
+
+    margin-bottom:10px;
+
+}
+
+.provider-login-container p{
+
+    color:#666;
+
+    margin-bottom:35px;
+
+}
+
+/* Inputs */
+
+.provider-login-container input{
+
+    width:100%;
+
+    padding:16px;
+
+    margin-bottom:20px;
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    font-size:16px;
+
+    transition:.3s;
+
+}
+
+.provider-login-container input:focus{
+
+    border-color:#2563eb;
+
+    box-shadow:0 0 10px rgba(37,99,235,.2);
+
+    outline:none;
+
+}
+
+/* Button */
+
+.provider-login-container button{
+
+    width:100%;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.provider-login-container button:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+/* Register Link */
+
+.provider-login-footer{
+
+    margin-top:25px;
+
+    color:#555;
+
+}
+
+.provider-login-footer a{
+
+    color:#2563eb;
+
+    font-weight:600;
+
+    text-decoration:none;
+
+}
+
+.provider-login-footer a:hover{
+
+    text-decoration:underline;
+
+}
+
+/* Animation */
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(40px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* Mobile */
+
+@media(max-width:768px){
+
+.provider-login-container{
+
+width:95%;
+
+padding:30px;
+
+margin:40px auto;
+
+}
+
+}

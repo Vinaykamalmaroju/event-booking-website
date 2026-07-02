@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Payment Successful</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <style>
+
+        body{
+
+            margin:0;
+            font-family:Poppins,Arial,sans-serif;
+            background:#f4f7fb;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+
+        }
+
+        .success-card{
+
+            background:#fff;
+            width:500px;
+            padding:40px;
+            border-radius:15px;
+            text-align:center;
+            box-shadow:0 10px 25px rgba(0,0,0,.15);
+
+        }
+
+        .icon{
+
+            font-size:80px;
+
+        }
+
+        h1{
+
+            color:#28a745;
+
+        }
+
+        p{
+
+            font-size:18px;
+            color:#555;
+
+        }
+
+        .btn{
+
+            display:inline-block;
+            margin-top:25px;
+            padding:12px 35px;
+            background:#0066ff;
+            color:white;
+            text-decoration:none;
+            border-radius:8px;
+
+        }
+
+        .btn:hover{
+
+            background:#004ec2;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="success-card">
+
+    <div class="icon">
+
+        ✅
+
+    </div>
+
+    <h1>Payment Successful</h1>
+
+    <p>
+
+        Your booking has been confirmed successfully.
+
+    </p>
+
+    <a href="/" class="btn">
+
+        Go to Home
+
+    </a>
+
+</div>
+
+</body>
+
+</html>

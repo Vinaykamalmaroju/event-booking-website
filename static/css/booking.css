@@ -1,0 +1,139 @@
+/* =========================================
+   BOOKING PAGE
+========================================= */
+
+.booking-form{
+
+    width:700px;
+
+    margin:60px auto;
+
+    background:#fff;
+
+    padding:45px;
+
+    border-radius:20px;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.10);
+
+}
+
+.booking-form h1{
+
+    text-align:center;
+
+    color:#0f172a;
+
+    font-size:38px;
+
+    margin-bottom:15px;
+
+}
+
+.booking-form p{
+
+    text-align:center;
+
+    color:#666;
+
+    margin-bottom:35px;
+
+}
+
+.booking-form input,
+.booking-form select{
+
+    width:100%;
+
+    padding:16px;
+
+    margin-bottom:20px;
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+    font-size:16px;
+
+    transition:.3s;
+
+}
+
+.booking-form input:focus,
+.booking-form select:focus{
+
+    border-color:#2563eb;
+
+    outline:none;
+
+    box-shadow:0 0 12px rgba(37,99,235,.18);
+
+}
+
+.booking-form button{
+
+    width:100%;
+
+    padding:18px;
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.booking-form button:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+/* ===============================
+   DATE STATUS
+=============================== */
+
+#availabilityMessage{
+
+    text-align:center;
+
+    font-size:18px;
+
+    margin-bottom:20px;
+
+}
+
+/* ===============================
+   MOBILE
+=============================== */
+
+@media(max-width:768px){
+
+.booking-form{
+
+width:95%;
+
+padding:25px;
+
+}
+
+.booking-form h1{
+
+font-size:30px;
+
+}
+
+}

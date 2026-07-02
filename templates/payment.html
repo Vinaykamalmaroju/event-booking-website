@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Payment</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/payment.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+</head>
+
+<body class="fade-in">
+
+<header class="fade-in">
+
+    <h1>Event Booking Website</h1>
+
+</header>
+
+<div class="payment-container slide-up">
+
+    <div class="payment-card hover-card">
+
+        <div class="payment-icon zoom">
+
+            💳
+
+        </div>
+
+        <h1 class="fade-in">
+
+            Secure Payment
+
+        </h1>
+
+        <p class="fade-in">
+
+            Complete your payment to confirm your booking.
+
+        </p>
+
+        <hr>
+
+        <div class="payment-details fade-in">
+
+            <h2>Booking Amount</h2>
+
+            <h1>₹500</h1>
+
+            <p>
+
+                Payment Gateway :
+                <strong>Demo Payment</strong>
+
+            </p>
+
+            <p>
+
+                Payment Status :
+                <span style="color:#ff9800;font-weight:bold;">
+
+                    Pending
+
+                </span>
+
+            </p>
+
+        </div>
+
+        <button
+            id="pay-btn"
+            class="btn-hover">
+
+            🔒 Pay Securely
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<a href="/chat"
+   class="chatbot-button">
+
+    💬
+
+</a>
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+<script>
+
+document.getElementById("pay-btn").addEventListener("click", function () {
+
+    // Temporary redirect for testing
+
+    window.location.href = "/payment-success";
+
+});
+
+</script>
+
+</body>
+
+</html>

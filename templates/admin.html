@@ -1,0 +1,368 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+    
+</head>
+
+<body>
+
+<div class="admin-container">
+
+    <h1>Admin Dashboard</h1>
+
+    <!-- Dashboard Cards -->
+
+    <div class="dashboard">
+
+        <div class="card">
+            <h2>{{ total }}</h2>
+            <p>Total Bookings</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ approved }}</h2>
+            <p>Approved Bookings</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ pending }}</h2>
+            <p>Pending Bookings</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ total_providers }}</h2>
+            <p>Total Providers</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ approved_providers }}</h2>
+            <p>Approved Providers</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ pending_providers }}</h2>
+            <p>Pending Providers</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ total_messages }}</h2>
+            <p>Contact Messages</p>
+        </div>
+
+<a href="/admin-support"
+style="text-decoration:none;color:inherit;">
+
+<div class="card">
+
+    <h2>
+
+        {{ open_support_requests }}
+
+    </h2>
+
+    <p>
+
+        💬 Open Support Requests
+
+    </p>
+
+</div>
+
+</a>
+
+
+
+<a href="/admin-analytics">
+
+<button>
+
+📊 View Analytics
+
+</button>
+
+</a>
+
+
+    </div>
+
+    <hr>
+<hr style="margin-top:40px;">
+
+<h2 style="text-align:center;">
+    Booking Analytics
+</h2>
+<div
+    id="chartData"
+    data-total="{{ total }}"
+    data-approved="{{ approved }}"
+    data-pending="{{ pending }}">
+</div>
+
+<div style="width:800px; margin:auto;">
+
+    <canvas id="bookingChart"></canvas>
+
+</div>
+    <hr>
+
+<!-- Navigation Buttons -->
+
+<div style="margin:25px 0;">
+
+    <a href="/export" class="edit-btn">
+        Export CSV
+    </a>
+
+    <a href="/admin-providers" class="approve-btn">
+        Manage Providers
+    </a>
+
+    <a href="/messages" class="edit-btn">
+        Contact Messages
+    </a>
+
+    <!-- NEW SUPPORT BUTTON -->
+
+    <a href="/admin-support" class="approve-btn">
+        💬 Support Requests
+    </a>
+
+    <a href="/logout" class="delete-btn">
+        Logout
+    </a>
+
+</div>
+
+    <!-- Search -->
+
+    <fom action="/admin"
+          method="GET"
+          class="search-form">
+
+        <input
+            type="text"
+            name="search"
+            placeholder="Search booking by name..."
+            value="{{ search }}">
+
+        <button type="submit">
+            Search
+        </button>
+
+    </form>
+
+    <!-- Booking Table -->
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Date</th>
+                <th>Service</th>
+                <th>Payment ID</th>
+                <th>Payment Status</th>
+                <th>Status</th>
+                <th>Actions</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for booking in bookings %}
+
+            <tr>
+
+                <td>{{ booking[0] }}</td>
+
+                <td>{{ booking[1] }}</td>
+
+                <td>{{ booking[2] }}</td>
+
+                <td>{{ booking[3] }}</td>
+
+                <td>{{ booking[4] }}</td>
+
+<td>{{ booking[5] }}</td>
+
+<td>{{ booking[8] }}</td>
+
+<td>
+
+{% if booking[9] == "Paid" %}
+
+<span style="color:green;font-weight:bold;">
+Paid
+</span>
+
+{% else %}
+
+<span style="color:red;font-weight:bold;">
+Pending
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if booking[6] == "Approved" %}
+
+<span class="approved-text">
+Approved
+</span>
+
+{% else %}
+
+<span class="pending-text">
+Pending
+</span>
+
+{% endif %}
+
+</td>
+
+                <td>
+
+                    {% if booking[6] == "Pending" %}
+
+                    <a href="/approve/{{ booking[0] }}"
+                       class="approve-btn">
+                        Approve
+                    </a>
+
+                    {% endif %}
+
+                    <a href="/edit/{{ booking[0] }}"
+                       class="edit-btn">
+                        Edit
+                    </a>
+
+                    <a href="/delete/{{ booking[0] }}"
+                       class="delete-btn"
+                       onclick="return confirm('Delete this booking?')">
+                        Delete
+                    </a>
+
+                </td>
+
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+const chartData = document.getElementById("chartData");
+
+const total = Number(chartData.dataset.total);
+const approved = Number(chartData.dataset.approved);
+const pending = Number(chartData.dataset.pending);
+
+const ctx = document.getElementById("bookingChart");
+
+new Chart(ctx, {
+
+    type: "bar",
+
+    data: {
+
+        labels: [
+            "Total Bookings",
+            "Approved",
+            "Pending"
+        ],
+
+        datasets: [{
+
+            label: "Bookings",
+
+            data: [
+                total,
+                approved,
+                pending
+            ],
+
+            backgroundColor: [
+                "#0d6efd",
+                "#198754",
+                "#ffc107"
+            ],
+
+            borderWidth: 1
+
+        }]
+
+    },
+
+    options: {
+
+        responsive: true,
+
+        scales: {
+
+            y: {
+
+                beginAtZero: true
+
+            }
+
+        }
+
+    }
+
+});
+
+</script>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

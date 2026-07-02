@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Portfolio</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static',filename='provider_portfolio.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Upload Portfolio</h1>
+
+<form action="/upload-portfolio"
+method="POST"
+enctype="multipart/form-data">
+
+<label>
+
+Select Images / Videos
+
+</label>
+
+<input
+type="file"
+name="portfolio"
+multiple
+required>
+
+<button>
+
+Upload Portfolio
+
+</button>
+
+</form>
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

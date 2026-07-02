@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Booking Details</title>
+
+</head>
+
+<body>
+
+<h1>Booking Details</h1>
+
+<p><b>Booking ID:</b> {{ booking[0] }}</p>
+
+<p><b>Name:</b> {{ booking[1] }}</p>
+
+<p><b>Email:</b> {{ booking[2] }}</p>
+
+<p><b>Phone:</b> {{ booking[3] }}</p>
+
+<p><b>Date:</b> {{ booking[4] }}</p>
+
+<p><b>Service:</b> {{ booking[5] }}</p>
+
+<p><b>Status:</b> {{ booking[6] }}</p>
+
+<p><b>Payment:</b> {{ booking[9] }}</p>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

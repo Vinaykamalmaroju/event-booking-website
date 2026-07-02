@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Login | Event Booking Website</title>
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/login.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+    <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>Event Booking Website</h1>
+
+        <nav>
+            <a href="/">Home</a>
+            <a href="/booking">Book Event</a>
+            <a href="/contact">Contact</a>
+            <a href="/provider-register">Become a Provider</a>
+            <a href="/providers">View Providers</a>
+            <a href="/admin-login">Admin Login</a>
+        </nav>
+    </header>
+
+    <!-- Login Section -->
+    <section class="login-section">
+
+        <div class="login-box">
+
+            <h2>Administrator Login</h2>
+
+            <p>Please login to access the dashboard.</p>
+
+            <form action="/login" method="POST">
+
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    required>
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    required>
+
+                <button type="submit">
+                    Login
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

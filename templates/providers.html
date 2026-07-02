@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Service Providers</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/providers.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="fade-in">
+
+<header class="fade-in">
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/booking">Book Event</a>
+
+        <a href="/providers">Providers</a>
+
+        <a href="/contact">Contact</a>
+
+        <a href="/provider-register">Become a Provider</a>
+
+    </nav>
+
+</header>
+
+<section class="providers-section slide-up">
+
+    <h2 class="fade-in">
+
+        🌟 Our Service Providers
+
+    </h2>
+
+    <form
+        action="/providers"
+        method="GET"
+        class="search-form fade-in">
+
+        <input
+            class="zoom"
+            type="text"
+            name="search"
+            placeholder="🔍 Search provider by name..."
+            value="{{ search }}">
+
+        <select
+            class="zoom"
+            name="service">
+
+            <option value="">All Services</option>
+
+            <option value="Photography"
+                {% if service=="Photography" %}selected{% endif %}>
+                Photography
+            </option>
+
+            <option value="Decoration"
+                {% if service=="Decoration" %}selected{% endif %}>
+                Decoration
+            </option>
+
+            <option value="Catering"
+                {% if service=="Catering" %}selected{% endif %}>
+                Catering
+            </option>
+
+            <option value="DJ"
+                {% if service=="DJ" %}selected{% endif %}>
+                DJ
+            </option>
+
+            <option value="Makeup"
+                {% if service=="Makeup" %}selected{% endif %}>
+                Makeup
+            </option>
+
+        </select>
+
+        <button
+            class="btn-hover"
+            type="submit">
+
+            🔎 Search
+
+        </button>
+
+    </form>
+
+<h2>Total Providers: {{ providers|length }}</h2>
+
+    <div class="provider-container">
+
+        {% if providers %}
+
+            {% for provider in providers %}
+
+            <div class="provider-card hover-card zoom">
+
+                <img
+                    src="{{ url_for('static', filename='uploads/' + provider[7]) }}"
+                    class="provider-image"
+                    alt="{{ provider[1] }}">
+
+
+
+                    
+                <h3 class="fade-in">
+
+                    {{ provider[1] }}
+
+                </h3>
+
+                <p>
+
+                    <strong>🎯 Service</strong><br>
+
+                    {{ provider[4] }}
+
+                </p>
+
+                <p>
+
+                    <strong>💼 Experience</strong><br>
+
+                    {{ provider[5] }}
+
+                </p>
+
+                <a href="/provider/{{ provider[0] }}">
+
+                    <button class="btn-hover">
+
+                        👤 View Profile
+
+                    </button>
+
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="fade-in">
+
+                <h3 style="text-align:center;">
+
+                    No providers found.
+
+                </h3>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>
+

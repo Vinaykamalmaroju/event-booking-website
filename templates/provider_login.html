@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Provider Login</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/provider_login.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="provider-login-page fade-in">
+
+<div class="provider-login-container slide-up">
+
+    <h1>Provider Login</h1>
+
+    <p>
+
+        Sign in to manage your bookings
+
+    </p>
+
+    <form method="POST">
+
+        <input
+            class="zoom"
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            required>
+
+        <input
+            class="zoom"
+            type="password"
+            name="password"
+            placeholder="Password"
+            required>
+
+        <button
+            class="btn-hover"
+            type="submit">
+
+            🔐 Login
+
+        </button>
+
+    </form>
+
+    <div class="provider-login-footer fade-in">
+
+        New Provider?
+
+        <a href="/provider-register">
+
+            Register Here
+
+        </a>
+
+    </div>
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

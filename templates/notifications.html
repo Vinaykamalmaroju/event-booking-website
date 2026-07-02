@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Notifications</title>
+</head>
+
+<body>
+
+<h2>My Notifications</h2>
+
+{% if notifications %}
+
+    {% for note in notifications %}
+
+        <div style="border:1px solid #ddd;padding:15px;margin:10px;">
+
+            <h4>{{ note["message"] }}</h4>
+
+            <p>{{ note["created_at"] }}</p>
+
+            <p>Status : {{ note["status"] }}</p>
+
+        </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <h3>No Notifications</h3>
+
+{% endif %}
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

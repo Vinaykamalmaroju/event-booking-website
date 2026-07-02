@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Login | Event Booking Website</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin_login.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+
+</head>
+
+<body class="fade-in">
+
+<header class="fade-in">
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/booking">Book Event</a>
+
+        <a href="/providers">Providers</a>
+
+        <a href="/contact">Contact</a>
+
+    </nav>
+
+</header>
+
+<div class="login-container slide-up">
+
+    <div class="login-box hover-card">
+
+        <div class="login-icon zoom">
+
+            🔐
+
+        </div>
+
+        <h1 class="fade-in">
+
+            Administrator Login
+
+        </h1>
+
+        <p class="fade-in">
+
+            Login to manage bookings, providers, customer messages,
+            payments and reports.
+
+        </p>
+
+        <form
+            method="POST"
+            action="/login">
+
+            <input
+                class="zoom"
+                type="text"
+                name="username"
+                placeholder="👤 Enter Username"
+                required>
+
+            <input
+                class="zoom"
+                type="password"
+                name="password"
+                placeholder="🔒 Enter Password"
+                required>
+
+            <button
+                class="btn-hover"
+                type="submit">
+
+                🚀 Login
+
+            </button>
+
+        </form>
+
+        <br>
+
+        <a
+            href="/"
+            class="back-home">
+
+            ← Back to Home
+
+        </a>
+
+    </div>
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

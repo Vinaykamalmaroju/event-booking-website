@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Edit Provider Profile</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/provider_edit.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="fade-in">
+
+<div class="booking-form slide-up">
+
+    <h1 class="fade-in">
+
+        ✏ Edit Profile
+
+    </h1>
+
+    <form
+        action="/provider-update"
+        method="POST"
+        enctype="multipart/form-data">
+
+        <input
+            type="hidden"
+            name="id"
+            value="{{ provider[0] }}">
+
+        <input
+            class="zoom"
+            type="text"
+            name="name"
+            value="{{ provider[1] }}"
+            required>
+
+        <input
+            class="zoom"
+            type="email"
+            name="email"
+            value="{{ provider[2] }}"
+            readonly>
+
+        <input
+            class="zoom"
+            type="text"
+            name="phone"
+            value="{{ provider[4] }}"
+            required>
+
+        <input
+            class="zoom"
+            type="text"
+            name="service"
+            value="{{ provider[5] }}"
+            required>
+
+        <input
+            class="zoom"
+            type="text"
+            name="experience"
+            value="{{ provider[6] }}"
+            required>
+
+        <textarea
+            class="zoom"
+            name="description"
+            rows="5">{{ provider[7] }}</textarea>
+
+        <h3 class="fade-in">
+
+            📷 Current Profile Photo
+
+        </h3>
+
+        <img
+            src="{{ url_for('static', filename='uploads/' + provider[8]) }}"
+            class="zoom"
+            width="150"
+            alt="Provider Image">
+
+        <br><br>
+
+        <input
+            class="zoom"
+            type="file"
+            name="image">
+
+        <br><br>
+
+        <button
+            class="btn-hover"
+            type="submit">
+
+            💾 Update Profile
+
+        </button>
+
+    </form>
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Event Planner</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/event_planner.css') }}">
+
+</head>
+
+<body>
+
+<div class="planner-container">
+
+    <h1>🤖 AI Event Planner</h1>
+
+    <p class="subtitle">
+        Let AI suggest the perfect event plan for you.
+    </p>
+
+    <form method="POST">
+
+        <label>Event Type</label>
+
+        <select name="event" required>
+
+            <option value="">Choose Event</option>
+
+            <option value="Wedding">Wedding</option>
+
+            <option value="Birthday">Birthday</option>
+
+            <option value="Corporate">Corporate</option>
+
+            <option value="Reception">Reception</option>
+
+            <option value="Engagement">Engagement</option>
+
+        </select>
+
+        <label>Number of Guests</label>
+
+        <input
+            type="number"
+            name="guests"
+            min="1"
+            placeholder="Example: 300"
+            required>
+
+        <label>Budget (₹)</label>
+
+        <input
+            type="number"
+            name="budget"
+            min="1000"
+            placeholder="Example: 500000"
+            required>
+
+        <button type="submit">
+
+            Generate AI Plan
+
+        </button>
+
+    </form>
+
+{% if suggestion %}
+
+<div class="ai-result">
+
+    <h2>✨ AI Recommendation</h2>
+
+    <div class="recommend-grid">
+
+        <div class="recommend-card">
+
+            <div class="icon">📦</div>
+
+            <h3>Recommended Package</h3>
+
+            <p>{{ suggestion.package }}</p>
+
+        </div>
+
+        <div class="recommend-card">
+
+            <div class="icon">🏛️</div>
+
+            <h3>Suggested Venue</h3>
+
+            <p>{{ suggestion.venue }}</p>
+
+        </div>
+
+    </div>
+
+    <div class="service-card">
+
+        <h3>🎯 Suggested Services</h3>
+
+        <div class="service-grid">
+
+            {% for item in suggestion.services %}
+
+            <div class="service-item">
+
+                {{ item }}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+
+    {% if plan %}
+
+    <div class="result-box">
+
+        <h2>📋 AI Event Plan</h2>
+
+        <pre>{{ plan }}</pre>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+
+</html>

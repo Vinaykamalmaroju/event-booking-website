@@ -1,0 +1,225 @@
+
+/* ==========================================
+   CONTACT PAGE
+========================================== */
+
+body{
+
+    margin:0;
+
+    padding:0;
+
+    font-family:'Poppins',sans-serif;
+
+    background:#f4f7fb;
+
+}
+
+/* ================= HEADER ================= */
+
+header{
+
+    background:white;
+
+    padding:18px 8%;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    box-shadow:0 4px 20px rgba(0,0,0,.08);
+
+}
+
+header h1{
+
+    margin:0;
+
+    color:#0f172a;
+
+    font-size:30px;
+
+}
+
+nav{
+
+    display:flex;
+
+    gap:25px;
+
+}
+
+nav a{
+
+    text-decoration:none;
+
+    color:#444;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+nav a:hover{
+
+    color:#2563eb;
+
+}
+
+/* ================= CONTACT FORM ================= */
+
+.booking-form{
+
+    width:90%;
+
+    max-width:650px;
+
+    margin:60px auto;
+
+    background:white;
+
+    padding:45px;
+
+    border-radius:20px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.10);
+
+    text-align:center;
+
+}
+
+.booking-form h1{
+
+    color:#0f172a;
+
+    margin-bottom:15px;
+
+    font-size:36px;
+
+}
+
+.booking-form p{
+
+    color:#666;
+
+    margin-bottom:35px;
+
+    line-height:1.8;
+
+}
+
+/* ================= INPUTS ================= */
+
+.booking-form input,
+
+.booking-form textarea{
+
+    width:100%;
+
+    padding:16px;
+
+    margin:14px 0;
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    font-size:16px;
+
+    box-sizing:border-box;
+
+    transition:.3s;
+
+    resize:none;
+
+}
+
+.booking-form input:focus,
+
+.booking-form textarea:focus{
+
+    outline:none;
+
+    border-color:#2563eb;
+
+    box-shadow:0 0 15px rgba(37,99,235,.20);
+
+}
+
+/* ================= BUTTON ================= */
+
+.booking-form button{
+
+    width:100%;
+
+    padding:16px;
+
+    margin-top:20px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.35s;
+
+}
+
+.booking-form button:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-4px);
+
+    box-shadow:0 10px 25px rgba(37,99,235,.35);
+
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:768px){
+
+header{
+
+    flex-direction:column;
+
+    gap:20px;
+
+}
+
+nav{
+
+    flex-wrap:wrap;
+
+    justify-content:center;
+
+}
+
+.booking-form{
+
+    width:95%;
+
+    padding:30px;
+
+}
+
+.booking-form h1{
+
+    font-size:28px;
+
+}
+
+}
+

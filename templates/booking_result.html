@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Booking Status</title>
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/booking_result.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+    <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Booking Status</h1>
+
+</header>
+
+<div class="container">
+
+{% if bookings %}
+
+    {% for booking in bookings %}
+
+    <div class="review-card">
+
+        <h3>{{ booking[1] }}</h3>
+
+        <p><strong>Service:</strong> {{ booking[5] }}</p>
+
+        <p><strong>Date:</strong> {{ booking[4] }}</p>
+
+        <p><strong>Status:</strong> {{ booking[6] }}</p>
+
+        {% if booking|length > 10 %}
+            <p><strong>Payment:</strong> {{ booking[10] }}</p>
+        {% endif %}
+
+    </div>
+
+    <hr>
+
+    {% endfor %}
+
+{% else %}
+
+<h2>No Booking Found</h2>
+
+{% endif %}
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

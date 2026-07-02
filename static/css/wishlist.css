@@ -1,0 +1,186 @@
+/* ==========================================
+   Wishlist Section
+========================================== */
+
+.wishlist-section{
+    width:90%;
+    margin:40px auto;
+    animation:fadeIn 0.8s;
+}
+
+.wishlist-section h2{
+    color:#2563eb;
+    margin-bottom:25px;
+    font-size:32px;
+    text-align:center;
+}
+
+/* ==========================================
+   Wishlist Grid
+========================================== */
+
+.wishlist-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:25px;
+}
+
+/* ==========================================
+   Wishlist Card
+========================================== */
+
+.wishlist-card{
+
+    background:#fff;
+
+    border-radius:15px;
+
+    overflow:hidden;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.12);
+
+    transition:.3s;
+
+    animation:slideUp .6s;
+
+}
+
+.wishlist-card:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:0 15px 30px rgba(0,0,0,.2);
+
+}
+
+/* ==========================================
+   Provider Image
+========================================== */
+
+.wishlist-card img{
+
+    width:100%;
+
+    height:220px;
+
+    object-fit:cover;
+
+}
+
+/* ==========================================
+   Card Body
+========================================== */
+
+.wishlist-content{
+
+    padding:20px;
+
+}
+
+.wishlist-content h3{
+
+    color:#222;
+
+    margin-bottom:10px;
+
+}
+
+.wishlist-content p{
+
+    color:#666;
+
+    margin:8px 0;
+
+    font-size:15px;
+
+}
+
+/* ==========================================
+   Buttons
+========================================== */
+
+.wishlist-buttons{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-top:20px;
+
+}
+
+.view-btn{
+
+    background:#2563eb;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:10px 18px;
+
+    border-radius:8px;
+
+    transition:.3s;
+
+}
+
+.view-btn:hover{
+
+    background:#1d4ed8;
+
+}
+
+.remove-btn{
+
+    background:#ef4444;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:10px 18px;
+
+    border-radius:8px;
+
+    transition:.3s;
+
+}
+
+.remove-btn:hover{
+
+    background:#dc2626;
+
+}
+
+/* ==========================================
+   Empty Wishlist
+========================================== */
+
+.empty-wishlist{
+
+    background:#fff;
+
+    padding:40px;
+
+    border-radius:12px;
+
+    text-align:center;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+
+}
+
+.empty-wishlist h3{
+
+    color:#2563eb;
+
+    margin-bottom:10px;
+
+}
+
+.empty-wishlist p{
+
+    color:#666;
+
+}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ provider[1] }} | Provider Profile</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/provider_details.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/providers">Providers</a>
+
+        <a href="/booking">Book Event</a>
+
+        <a href="/contact">Contact</a>
+
+    </nav>
+
+</header>
+
+<section class="profile-container">
+
+<div class="profile-card">
+
+<img
+src="https://ui-avatars.com/api/?name={{ provider[1] }}&background=2563eb&color=fff&size=300"
+class="profile-image">
+
+<h1>{{ provider[1] }}</h1>
+
+<div class="stars">
+
+★★★★★
+
+</div>
+
+<h3>{{ provider[4] }}</h3>
+
+<div class="profile-details">
+
+<p><strong>Experience :</strong> {{ provider[5] }}</p>
+
+<p><strong>Description :</strong> {{ provider[6] }}</p>
+
+<p><strong>Email :</strong> {{ provider[2] }}</p>
+
+<p><strong>Phone :</strong> {{ provider[3] }}</p>
+
+</div>
+
+<div class="profile-buttons">
+
+<a href="/booking">
+
+<button class="book-btn">
+
+Book Now
+
+</button>
+
+</a>
+
+<a href="/save-provider/{{ provider['id'] }}">
+
+<button class="save-btn">
+
+❤ Save Provider
+
+</button>
+
+<a href="/wishlist/{{ provider['id'] }}">
+    <button>❤️ Save to Wishlist</button>
+</a>
+
+
+</a>
+
+
+
+
+<a href="/providers">
+
+<button class="back-btn">
+
+Back
+
+</button>
+
+</a>
+
+</div>
+
+<hr>
+
+<h2>Portfolio</h2>
+
+{% if images %}
+
+<div class="portfolio-gallery">
+
+{% for image in images %}
+
+<img src="{{ url_for('static', filename='uploads/' + image) }}"
+     class="portfolio-image">
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<p>No portfolio uploaded yet.</p>
+
+{% endif %}
+
+</div>
+
+</section>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

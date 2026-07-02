@@ -1,0 +1,220 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{{ provider[1] }} | Provider Profile</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/provider_profile.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="fade-in">
+
+<header class="fade-in">
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/providers">Providers</a>
+
+        <a href="/booking">Book Event</a>
+
+        <a href="/contact">Contact</a>
+
+    </nav>
+
+</header>
+
+<section class="profile-container slide-up">
+
+    <div class="profile-card hover-card">
+
+        <img
+            src="{{ url_for('static', filename='uploads/' + provider[7]) }}"
+            alt="{{ provider[1] }}"
+            class="profile-image zoom">
+
+        <h1 class="fade-in">
+
+            {{ provider[1] }}
+
+        </h1>
+
+        <div class="stars fade-in">
+
+            ★★★★★
+
+        </div>
+
+        <h3 class="fade-in">
+
+            {{ provider[4] }}
+
+        </h3>
+
+        <div class="profile-details fade-in">
+
+            <p>
+
+                <strong>💼 Experience</strong><br>
+
+                {{ provider[5] }}
+
+            </p>
+
+            <p>
+
+                <strong>📝 Description</strong><br>
+
+                {{ provider[6] }}
+
+            </p>
+
+            <p>
+
+                <strong>📧 Email</strong><br>
+
+                {{ provider[2] }}
+
+            </p>
+
+            <p>
+
+                <strong>📞 Phone</strong><br>
+
+                {{ provider[3] }}
+
+            </p>
+
+        </div>
+
+        <div class="profile-buttons">
+
+            <a href="/booking">
+
+                <button class="book-btn btn-hover">
+
+                    📅 Book This Provider
+
+                </button>
+
+            </a>
+
+            <a href="/providers">
+
+                <button class="back-btn btn-hover">
+
+                    ← Back to Providers
+
+                </button>
+
+            </a>
+
+<h2>Customer Reviews</h2>
+
+{% for review in reviews %}
+
+<div class="review-card">
+
+    <h3>{{ review[3] }}</h3>
+
+    <p>
+
+        Rating :
+
+        {{ review[4] }} ⭐
+
+    </p>
+
+    <p>
+
+        {{ review[5] }}
+
+    </p>
+
+</div>
+
+{% endfor %}
+
+        </div>
+
+    </div>
+
+
+<h2>Portfolio</h2>
+
+<div class="gallery">
+
+{% for file in portfolio %}
+
+{% if file[1]=="image" %}
+
+<img
+src="/uploads/portfolio/{{ file[0] }}"
+width="250">
+
+{% endif %}
+
+{% endfor %}
+
+</div>
+
+{% for file in portfolio %}
+
+{% if file[1]=="video" %}
+
+<video width="350" controls>
+
+<source
+src="/uploads/portfolio/{{ file[0] }}">
+
+</video>
+
+{% endif %}
+
+{% endfor %}
+
+</section>
+
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+
+</html>
+

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Provider Registration</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/provider_register.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body>
+
+<header class="fade-in">
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/booking">Book Event</a>
+
+        <a href="/providers">Providers</a>
+
+        <a href="/contact">Contact</a>
+
+        <a href="/admin-login">Admin Login</a>
+
+    </nav>
+
+</header>
+
+<section class="booking-form slide-up">
+
+    <h1>Become a Service Provider</h1>
+
+    <p>
+
+        Register yourself and start receiving event bookings.
+
+    </p>
+
+    <form
+        action="/provider-submit"
+        method="POST"
+        enctype="multipart/form-data">
+
+        <input
+            class="zoom"
+            type="text"
+            name="name"
+            placeholder="👤 Full Name"
+            required>
+
+        <input
+            class="zoom"
+            type="email"
+            name="email"
+            placeholder="📧 Email Address"
+            required>
+
+        <input
+            class="zoom"
+            type="password"
+            name="password"
+            placeholder="🔒 Create Password"
+            required>
+
+        <input
+            class="zoom"
+            type="tel"
+            name="phone"
+            placeholder="📱 Phone Number"
+            required>
+
+        <select
+            class="zoom"
+            name="service"
+            required>
+
+            <option value="">Select Your Service</option>
+
+            <option>Wedding Photography</option>
+            <option>Videography</option>
+            <option>Catering</option>
+            <option>Decoration</option>
+            <option>DJ</option>
+            <option>Makeup Artist</option>
+            <option>Wedding Planner</option>
+            <option>Stage Decoration</option>
+
+        </select>
+
+        <input
+            class="zoom"
+            type="text"
+            name="experience"
+            placeholder="💼 Years of Experience"
+            required>
+
+        <textarea
+            class="zoom"
+            name="description"
+            rows="5"
+            placeholder="📝 Describe your services..."
+            required></textarea>
+
+        <!-- PACKAGE PRICES -->
+
+        <h3>Package Prices</h3>
+
+        <input
+            class="zoom"
+            type="number"
+            name="basic_package"
+            placeholder="💰 Basic Package Price (₹)"
+            required>
+
+        <input
+            class="zoom"
+            type="number"
+            name="premium_package"
+            placeholder="💰 Premium Package Price (₹)"
+            required>
+
+        <input
+            class="zoom"
+            type="number"
+            name="luxury_package"
+            placeholder="💰 Luxury Package Price (₹)"
+            required>
+
+        <!-- PROFILE IMAGE -->
+
+        <label class="fade-in">
+
+            📷 Profile Image
+
+        </label>
+
+        <input
+            class="zoom"
+            type="file"
+            name="image"
+            accept="image/*"
+            required>
+
+        <button
+            class="btn-hover"
+            type="submit">
+
+            ✅ Register
+
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="/">
+
+        <button
+            class="btn-hover"
+            type="button">
+
+            🏠 Back to Home
+
+        </button>
+
+    </a>
+
+</section>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

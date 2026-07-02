@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Availability</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Provider Portal</h1>
+
+    <nav>
+
+        <a href="/provider-dashboard">Dashboard</a>
+
+        <a href="/provider-bookings">My Bookings</a>
+
+        <a href="/provider-logout">Logout</a>
+
+    </nav>
+
+</header>
+
+<div class="booking-form fade-in">
+
+    <h1>Manage Availability</h1>
+
+    <p>
+
+        Select a date and choose whether you are available.
+
+    </p>
+
+    <form
+        method="POST"
+        action="/save-availability">
+
+        <label>
+
+            Event Date
+
+        </label>
+
+        <input
+            type="date"
+            name="date"
+            required>
+
+        <label>
+
+            Status
+
+        </label>
+
+        <select
+            name="status"
+            required>
+
+            <option value="Available">
+
+                Available
+
+            </option>
+
+            <option value="Unavailable">
+
+                Unavailable
+
+            </option>
+
+        </select>
+
+        <button type="submit">
+
+            Save Availability
+
+        </button>
+
+    </form>
+
+<hr>
+
+<h2>Saved Availability</h2>
+
+{% if availability %}
+
+<table style="width:100%; margin-top:20px; border-collapse:collapse;">
+
+    <tr>
+
+        <th>Date</th>
+
+        <th>Status</th>
+
+    </tr>
+
+    {% for row in availability %}
+
+    <tr>
+
+        <td>{{ row[0] }}</td>
+
+        <td>{{ row[1] }}</td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% else %}
+
+<p>No availability added yet.</p>
+
+{% endif %}
+
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+
+</html>

@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Provider Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/provider_dashboard.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="fade-in">
+
+<div class="provider-dashboard">
+
+    <div class="dashboard-card slide-up">
+
+        {% if provider[8] %}
+
+        <img
+            src="{{ url_for('static', filename='uploads/' + provider[8]) }}"
+            class="provider-profile-image zoom"
+            alt="Provider Profile">
+
+        {% endif %}
+
+        <h1 class="fade-in">
+
+            {{ provider[1] }}
+
+        </h1>
+
+        <h3 class="fade-in">
+
+            {{ provider[5] }}
+
+        </h3>
+
+        <span class="status-badge fade-in">
+
+            ⭐ Approved Provider
+
+        </span>
+
+<div class="earning-container fade-in">
+
+    <div class="earning-card">
+
+        <h4>Total Bookings</h4>
+
+        <h2>{{ total_bookings }}</h2>
+
+    </div>
+
+    <div class="earning-card">
+
+        <h4>Total Earnings</h4>
+
+        <h2>₹{{ total_earnings }}</h2>
+
+    </div>
+
+    <div class="earning-card">
+
+        <h4>This Month</h4>
+
+        <h2>₹{{ month_earnings }}</h2>
+
+    </div>
+
+</div>
+
+
+        <div class="provider-details fade-in">
+
+            <p>
+
+                <strong>📧 Email</strong><br>
+
+                {{ provider[2] }}
+
+            </p>
+
+            <p>
+
+                <strong>📞 Phone</strong><br>
+
+                {{ provider[4] }}
+
+            </p>
+
+            <p>
+
+                <strong>🎯 Service</strong><br>
+
+                {{ provider[5] }}
+
+            </p>
+
+            <p>
+
+                <strong>💼 Experience</strong><br>
+
+                {{ provider[6] }}
+
+            </p>
+
+            <p>
+
+                <strong>📝 Description</strong><br>
+
+                {{ provider[7] }}
+
+            </p>
+
+        </div>
+
+        <div class="dashboard-buttons">
+
+            <a href="/provider-bookings">
+
+                <button
+                    class="booking-btn btn-hover">
+
+                    📅 My Bookings
+
+                </button>
+
+</a>
+
+
+            </a>
+
+            <a href="/provider-edit">
+
+                <button
+                    class="edit-btn btn-hover">
+
+                    ✏ Edit Profile
+
+                </button>
+            
+            </a>
+
+
+            <a href="/provider-availability">
+                <button 
+                class="edit-btn">
+                    📅 Manage Availability
+                </button>
+
+
+            </a>
+
+            <a href="/provider-logout">
+
+                <button
+                    class="logout-btn btn-hover">
+
+                    🚪 Logout
+
+                </button>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

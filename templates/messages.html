@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+
+
+<head>
+
+
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+    <title>Customer Messages</title>
+
+
+
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/messages.css') }}">
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+    <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+
+
+</head>
+
+
+
+<body>
+
+
+
+<header>
+
+
+
+    <h1>Event Booking Admin</h1>
+
+
+
+    <nav>
+
+        <a href="/admin">Dashboard</a>
+
+        <a href="/admin-providers">Providers</a>
+
+        <a href="/messages">Messages</a>
+
+        <a href="/logout">Logout</a>
+
+    </nav>
+
+
+
+</header>
+
+
+
+<div class="admin-container">
+
+
+
+    <h1>Customer Messages</h1>
+
+
+
+    {% if messages %}
+
+
+
+    <table>
+
+
+
+        <thead>
+
+
+
+            <tr>
+
+
+
+                <th>ID</th>
+
+                <th>Name</th>
+
+                <th>Email</th>
+
+                <th>Phone</th>
+
+                <th>Message</th>
+
+
+
+            </tr>
+
+
+
+        </thead>
+
+
+
+        <tbody>
+
+
+
+        {% for msg in messages %}
+
+
+
+            <tr>
+
+
+
+                <td>{{ msg[0] }}</td>
+
+                <td>{{ msg[1] }}</td>
+
+                <td>{{ msg[2] }}</td>
+
+                <td>{{ msg[3] }}</td>
+
+                <td>{{ msg[4] }}</td>
+
+
+
+            </tr>
+
+
+
+        {% endfor %}
+
+
+
+        </tbody>
+
+
+
+    </table>
+
+
+
+    {% else %}
+
+
+
+        <div class="empty-state">
+
+
+
+            <h2>No Messages Found</h2>
+
+
+
+            <p>No customer has submitted a contact form yet.</p>
+
+
+
+        </div>
+
+
+
+    {% endif %}
+
+
+
+    <br>
+
+
+
+    <a href="/admin" class="edit-btn">
+
+        ← Back to Dashboard
+
+    </a>
+
+
+
+</div>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

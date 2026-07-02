@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Booking Invoice</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/common.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+<style>
+
+body{
+    background:#f5f7fb;
+    font-family:Arial,sans-serif;
+}
+
+.invoice-box{
+
+    width:700px;
+    margin:40px auto;
+    background:white;
+    padding:40px;
+
+    border-radius:15px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+
+}
+
+h1{
+
+    text-align:center;
+    color:#0d6efd;
+
+}
+
+table{
+
+    width:100%;
+    margin-top:30px;
+
+    border-collapse:collapse;
+
+}
+
+td{
+
+    padding:14px;
+    border-bottom:1px solid #ddd;
+
+}
+
+.label{
+
+    font-weight:bold;
+    width:220px;
+
+}
+
+.print-btn{
+
+    display:block;
+    width:220px;
+
+    margin:40px auto;
+
+    background:#0d6efd;
+
+    color:white;
+
+    text-align:center;
+
+    text-decoration:none;
+
+    padding:15px;
+
+    border-radius:8px;
+
+}
+
+.print-btn:hover{
+
+    background:#084298;
+
+}
+
+@media print{
+
+.print-btn{
+
+display:none;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="invoice-box">
+
+<h1>Event Booking Invoice</h1>
+
+<table>
+
+<tr>
+
+<td class="label">Booking ID</td>
+
+<td>{{ booking[0] }}</td>
+
+</tr>
+
+<tr>
+
+<td class="label">Customer Name</td>
+
+<td>{{ booking[1] }}</td>
+
+</tr>
+
+<tr>
+
+<td class="label">Email</td>
+
+<td>{{ booking[2] }}</td>
+
+</tr>
+
+<tr>
+
+<td class="label">Phone</td>
+
+<td>{{ booking[3] }}</td>
+
+</tr>
+
+<tr>
+
+<td class="label">Event Date</td>
+
+<td>{{ booking[4] }}</td>
+
+</tr>
+
+<tr>
+
+<td class="label">Service</td>
+
+<td>{{ booking[5] }}</td>
+
+</tr>
+
+<tr>
+
+<td class="label">Booking Status</td>
+
+<td>{{ booking[6] }}</td>
+
+</tr>
+
+<tr>
+
+<td class="label">Payment ID</td>
+
+<td>{{ booking[8] }}</td>
+
+</tr>
+
+<tr>
+
+<td class="label">Payment Status</td>
+
+<td>{{ booking[9] }}</td>
+
+</tr>
+
+</table>
+
+<a href="#" onclick="window.print()"
+class="print-btn">
+
+Download / Print Invoice
+
+</a>
+
+</div>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

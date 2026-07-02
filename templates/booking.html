@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Book Event</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/booking.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+          
+
+</head>
+
+<body>
+
+<header class="fade-in">
+
+    <h1>Event Booking Website</h1>
+
+    <nav>
+
+        <a href="/">Home</a>
+
+        <a href="/booking">Book Event</a>
+
+        <a href="/providers">Providers</a>
+
+        <a href="/contact">Contact</a>
+
+    </nav>
+
+</header>
+
+<div class="booking-form slide-up">
+
+    <h1>Book Your Event</h1>
+
+    <p>
+        Fill in your details below and submit your booking request.
+    </p>
+
+    <form method="POST" action="/submit">
+
+        <!-- Name -->
+
+        <input
+            class="zoom"
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            required>
+
+        <!-- Email -->
+
+        <input
+            class="zoom"
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            required>
+
+        <!-- Phone -->
+
+        <input
+            class="zoom"
+            type="tel"
+            name="phone"
+            placeholder="Phone Number"
+            required>
+
+        <!-- Event Date -->
+
+        <label>Event Date</label>
+
+        <input
+            class="zoom"
+            type="date"
+            id="bookingDate"
+            name="date"
+            required>
+
+        <!-- Availability Message -->
+
+        <div
+            id="availabilityMessage"
+            style="
+                margin-top:10px;
+                margin-bottom:20px;
+                font-weight:bold;
+                font-size:18px;
+            ">
+        </div>
+
+        <!-- Provider -->
+
+        <label>Select Provider</label>
+
+        <select
+            class="zoom"
+            id="provider"
+            name="provider_email"
+            required>
+
+            <option value="">Choose Provider</option>
+
+            {% for provider in providers %}
+
+            <option
+                value="{{ provider[2] }}"
+                data-service="{{ provider[5] }}">
+
+                {{ provider[1] }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+        <!-- Service -->
+
+        <label>Select Service</label>
+
+        <select
+            class="zoom"
+            id="service"
+            name="service"
+            required>
+
+            <option value="">Select Service</option>
+
+        </select>
+
+        <button
+            class="btn-hover"
+            id="submitBtn"
+            type="submit">
+
+            📅 Book Now
+
+        </button>
+
+    </form>
+
+</div>
+
+<script>
+
+const bookingDate = document.getElementById("bookingDate");
+
+const provider = document.getElementById("provider");
+
+const service = document.getElementById("service");
+
+const submitBtn = document.getElementById("submitBtn");
+
+const availabilityMessage =
+document.getElementById("availabilityMessage");
+
+
+// ----------------------------
+// Fill Service Automatically
+// ----------------------------
+
+provider.addEventListener("change", function () {
+
+    service.innerHTML =
+        '<option value="">Select Service</option>';
+
+    if (this.value == "")
+        return;
+
+    let selected =
+        this.options[this.selectedIndex];
+
+    let providerService =
+        selected.getAttribute("data-service");
+
+    let option =
+        document.createElement("option");
+
+    option.value = providerService;
+
+    option.text = providerService;
+
+    service.appendChild(option);
+
+    checkAvailability();
+
+});
+
+
+// ----------------------------
+// Check Availability
+// ----------------------------
+
+bookingDate.addEventListener("change", checkAvailability);
+
+function checkAvailability() {
+
+    if (
+        bookingDate.value == "" ||
+        provider.value == ""
+    )
+        return;
+
+    fetch(
+        "/check-date?date=" +
+        bookingDate.value +
+        "&provider_email=" +
+        provider.value
+    )
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if (data.available) {
+
+            availabilityMessage.innerHTML =
+                "🟢 Provider Available";
+
+            availabilityMessage.style.color =
+                "green";
+
+            submitBtn.disabled = false;
+
+        }
+
+        else {
+
+            availabilityMessage.innerHTML =
+                "🔴 Provider Unavailable";
+
+            availabilityMessage.style.color =
+                "red";
+
+            submitBtn.disabled = true;
+
+        }
+
+    });
+
+}
+
+</script>
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

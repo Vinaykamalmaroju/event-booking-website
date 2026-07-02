@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Customer Registration</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/customer_register.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body>
+
+<div class="register-box">
+
+    <h2>Customer Registration</h2>
+
+    <!-- CHANGED HERE -->
+    <form action="/customer-submit" method="POST">
+
+        <div class="input-group">
+            <label>Full Name</label>
+            <input
+                type="text"
+                name="name"
+                placeholder="Enter your name"
+                required>
+        </div>
+
+        <div class="input-group">
+            <label>Email Address</label>
+            <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                required>
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <input
+                type="password"
+                name="password"
+                placeholder="Create password"
+                required>
+        </div>
+
+        <div class="input-group">
+            <label>Phone Number</label>
+            <input
+                type="text"
+                name="phone"
+                placeholder="Enter phone number"
+                required>
+        </div>
+
+        <button type="submit">
+            Register
+        </button>
+
+    </form>
+
+    <div class="login-link">
+        Already have an account?
+
+        <a href="/customer-login">
+            Login Here
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

@@ -1,0 +1,293 @@
+/* ===========================
+   Booking History Page
+=========================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f4f7fc;
+    color:#222;
+}
+
+/* ===========================
+   Header
+=========================== */
+
+header{
+    background:#0d1b34;
+    color:#fff;
+    text-align:center;
+    padding:25px;
+    box-shadow:0 4px 10px rgba(0,0,0,.15);
+}
+
+header h1{
+    font-size:40px;
+    font-weight:700;
+}
+
+/* ===========================
+   Main Container
+=========================== */
+
+.container{
+    width:90%;
+    max-width:1100px;
+    margin:40px auto;
+}
+
+/* ===========================
+   Search Card
+=========================== */
+
+.search-card{
+    background:#fff;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    margin-bottom:35px;
+}
+
+.search-card h2{
+    color:#0d47a1;
+    margin-bottom:20px;
+    font-size:30px;
+}
+
+.search-card input{
+
+    width:100%;
+    padding:16px;
+    font-size:17px;
+    border:2px solid #d9d9d9;
+    border-radius:10px;
+    outline:none;
+    transition:.3s;
+    margin-bottom:20px;
+
+}
+
+.search-card input:focus{
+
+    border-color:#1565c0;
+
+}
+
+.search-card button{
+
+    background:#1565c0;
+    color:white;
+    border:none;
+    padding:14px 35px;
+    border-radius:10px;
+    font-size:17px;
+    cursor:pointer;
+    transition:.3s;
+
+}
+
+.search-card button:hover{
+
+    background:#0d47a1;
+    transform:translateY(-2px);
+
+}
+
+/* ===========================
+   Booking Cards
+=========================== */
+
+.booking-card{
+
+    background:#fff;
+    border-radius:15px;
+    padding:25px;
+    margin-bottom:25px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    transition:.3s;
+
+}
+
+.booking-card:hover{
+
+    transform:translateY(-5px);
+    box-shadow:0 12px 25px rgba(0,0,0,.15);
+
+}
+
+.booking-card h3{
+
+    color:#1565c0;
+    margin-bottom:15px;
+
+}
+
+.booking-card p{
+
+    margin:10px 0;
+    color:#555;
+    font-size:16px;
+
+}
+
+/* ===========================
+   Status Badges
+=========================== */
+
+.status{
+
+    display:inline-block;
+    padding:8px 18px;
+    border-radius:20px;
+    font-size:14px;
+    font-weight:600;
+
+}
+
+.pending{
+
+    background:#fff3cd;
+    color:#856404;
+
+}
+
+.confirmed{
+
+    background:#d4edda;
+    color:#155724;
+
+}
+
+.completed{
+
+    background:#d1ecf1;
+    color:#0c5460;
+
+}
+
+.cancelled{
+
+    background:#f8d7da;
+    color:#721c24;
+
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.action-buttons{
+
+    margin-top:20px;
+
+}
+
+.action-buttons button{
+
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin-right:10px;
+    transition:.3s;
+
+}
+
+.view-btn{
+
+    background:#1565c0;
+    color:white;
+
+}
+
+.view-btn:hover{
+
+    background:#0d47a1;
+
+}
+
+.cancel-btn{
+
+    background:#dc3545;
+    color:white;
+
+}
+
+.cancel-btn:hover{
+
+    background:#b52a37;
+
+}
+
+.invoice-btn{
+
+    background:#28a745;
+    color:white;
+
+}
+
+.invoice-btn:hover{
+
+    background:#1f7a34;
+
+}
+
+/* ===========================
+   Empty Message
+=========================== */
+
+.no-booking{
+
+    background:white;
+    text-align:center;
+    padding:40px;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    color:#666;
+    font-size:22px;
+
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media(max-width:768px){
+
+header h1{
+
+    font-size:30px;
+
+}
+
+.search-card h2{
+
+    font-size:24px;
+
+}
+
+.booking-card{
+
+    padding:20px;
+
+}
+
+.search-card button{
+
+    width:100%;
+
+}
+
+.action-buttons button{
+
+    width:100%;
+    margin-bottom:10px;
+
+}
+
+}

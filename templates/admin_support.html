@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Support Requests</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+</head>
+
+<body>
+
+<h1 align="center">
+
+💬 Customer Support Requests
+
+</h1>
+
+<table border="1" cellpadding="10" cellspacing="0" align="center">
+
+<tr>
+
+<th>Name</th>
+
+<th>Email</th>
+
+<th>Status</th>
+
+<th>Action</th>
+
+</tr>
+
+{% for customer in customers %}
+
+<tr>
+
+<td>{{ customer["customer_name"] }}</td>
+
+<td>{{ customer["customer_email"] }}</td>
+
+<td>{{ customer["status"] }}</td>
+
+<td>
+
+<a href="/admin-support-chat/{{ customer['customer_email'] }}">
+
+<button>
+
+Open Chat
+
+</button>
+
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</body>
+
+</html>

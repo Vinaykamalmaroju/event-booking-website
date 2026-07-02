@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Track Booking</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/track_booking.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="fade-in">
+
+<header class="fade-in">
+
+    <h1>
+
+        📦 Track Your Booking
+
+    </h1>
+
+</header>
+
+<div class="booking-form slide-up">
+
+    <h2 class="fade-in">
+
+        Check Your Booking Status
+
+    </h2>
+
+    <p class="fade-in">
+
+        Enter the email address used while booking your event.
+
+    </p>
+
+    <form
+        action="/track"
+        method="POST">
+
+        <input
+            class="zoom"
+            type="email"
+            name="email"
+            placeholder="📧 Enter your booking email"
+            required>
+
+        <button
+            class="btn-hover"
+            type="submit">
+
+            🔍 Track Booking
+
+        </button>
+
+    </form>
+
+
+
+
+</div>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</body>
+
+</html>

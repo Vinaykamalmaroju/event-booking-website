@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Customer Reviews</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/reviews.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+
+          <link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+</head>
+
+<body class="fade-in">
+
+<div class="container slide-up">
+
+    <h1 class="fade-in">
+
+        ⭐ Customer Reviews
+
+    </h1>
+
+    <p class="fade-in">
+
+        Share your experience with our Event Booking Website.
+
+    </p>
+
+    <form
+        action="/submit-review"
+        method="POST"
+        class="hover-card">
+
+        <input
+            class="zoom"
+            type="text"
+            name="name"
+            placeholder="👤 Your Name"
+            required>
+
+        <br><br>
+
+        <select
+            class="zoom"
+            name="rating"
+            required>
+
+            <option value="">⭐ Select Rating</option>
+
+            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+
+            <option value="4">⭐⭐⭐⭐ Very Good</option>
+
+            <option value="3">⭐⭐⭐ Good</option>
+
+            <option value="2">⭐⭐ Fair</option>
+
+            <option value="1">⭐ Poor</option>
+
+        </select>
+
+        <br><br>
+
+        <textarea
+            class="zoom"
+            name="review"
+            placeholder="💬 Write your review..."
+            required></textarea>
+
+        <br><br>
+
+        <button
+            class="btn-hover"
+            type="submit">
+
+            📨 Submit Review
+
+        </button>
+
+    </form>
+
+    <br><br>
+
+    {% for review in reviews %}
+
+    <div class="review-card hover-card fade-in">
+
+        <h3>
+
+            👤 {{ review[1] }}
+
+        </h3>
+
+        <p>
+
+            <strong>⭐ Rating</strong>
+
+            {{ review[2] }}/5
+
+        </p>
+
+        <p>
+
+            "{{ review[3] }}"
+
+        </p>
+
+        <small>
+
+            📅 {{ review[4] }}
+
+        </small>
+
+    </div>
+
+    <br>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>

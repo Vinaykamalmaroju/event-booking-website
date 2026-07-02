@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Support Chat</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/common.css') }}">
+
+</head>
+
+<body>
+
+<h1>
+
+💬 Customer Support
+
+</h1>
+
+<h3>
+
+{{ email }}
+
+</h3>
+
+<hr>
+
+<div>
+
+{% for chat in chats %}
+
+    {% if chat["sender"]=="Customer" %}
+
+        <div
+        style="background:#f1f1f1;
+               padding:15px;
+               margin:10px;
+               border-radius:10px;">
+
+            <strong>
+
+            Customer
+
+            </strong>
+
+            <br><br>
+
+            {{ chat["message"] }}
+
+            <br><br>
+
+            <small>
+
+            {{ chat["created_at"] }}
+
+            </small>
+
+        </div>
+
+    {% else %}
+
+        <div
+        style="background:#d9fdd3;
+               padding:15px;
+               margin:10px;
+               border-radius:10px;
+               text-align:right;">
+
+            <strong>
+
+            Admin
+
+            </strong>
+
+            <br><br>
+
+            {{ chat["message"] }}
+
+            <br><br>
+
+            <small>
+
+            {{ chat["created_at"] }}
+
+            </small>
+
+        </div>
+
+    {% endif %}
+
+{% endfor %}
+
+</div>
+
+<hr>
+
+<form method="POST">
+
+<textarea
+
+name="reply"
+
+rows="5"
+
+placeholder="Type your reply..."
+
+required>
+
+</textarea>
+
+<br><br>
+
+<button>
+
+Send Reply
+
+</button>
+
+</form>
+
+</body>
+
+</html>

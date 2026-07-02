@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Customer Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/customer_dashboard.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/wishlist.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+          
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Customer Dashboard</h1>
+
+</header>
+
+<div class="dashboard">
+
+    <!-- Customer Profile -->
+
+    <div class="profile">
+
+        <img src="{{ url_for('static', filename='images/user.png') }}">
+
+        <h2>{{ customer[1] }}</h2>
+
+        <p><strong>Email :</strong> {{ customer[2] }}</p>
+
+        <p><strong>Phone :</strong> {{ customer[3] }}</p>
+
+    </div>
+
+    <!-- Dashboard Menu -->
+
+    <div class="menu">
+
+        <a href="/booking">
+            <button>📅 Book Event</button>
+        </a>
+
+        <a href="/booking-history">
+            <button>📖 Booking History</button>
+        </a>
+
+        <a href="/track-booking">
+            <button>📍 Track Booking</button>
+        </a>
+
+        <a href="/providers">
+            <button>👨‍💼 Browse Providers</button>
+        </a>
+
+
+<a href="/event-planner">
+    <button class="dashboard-btn">
+        🤖 AI Event Planner
+    </button>
+</a>
+
+
+<a href="/budget-estimator">
+    <button class="dashboard-btn">
+        💰 AI Budget Estimator
+    </button>
+</a>
+
+
+
+    </div>
+
+    <!-- Wishlist -->
+
+    <section class="wishlist-section">
+
+        <h2>❤️ My Wishlist</h2>
+
+        {% if wishlist %}
+
+        <div class="wishlist-container">
+
+            {% for provider in wishlist %}
+
+            <div class="wishlist-card">
+
+                <img src="https://ui-avatars.com/api/?name={{ provider['name'] }}&background=2563eb&color=fff&size=300">
+
+                <div class="wishlist-content">
+
+                    <h3>{{ provider["name"] }}</h3>
+
+                    <p><strong>Service:</strong> {{ provider["service"] }}</p>
+
+                    <p><strong>Experience:</strong> {{ provider["experience"] }}</p>
+
+                    <div class="wishlist-buttons">
+
+                        <a href="/provider/{{ provider['id'] }}"
+                           class="view-btn">
+                            View Profile
+                        </a>
+
+                        <a href="/remove-wishlist/{{ provider['id'] }}"
+                           class="remove-btn">
+                            Remove
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-wishlist">
+
+            <h3>No Providers Saved Yet ❤️</h3>
+
+            <p>Save your favourite providers and they will appear here.</p>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+<a href="/customer-support">
+    <button class="dashboard-btn">
+        💬 Live Support
+    </button>
+</a>
+
+
+    <!-- Logout -->
+
+    <div class="logout">
+
+        <a href="/customer-logout">
+            <button>Logout</button>
+        </a>
+
+    </div>
+
+</div>
+
+<div class="notifications-box">
+    <h3>Notifications</h3>
+
+    {% if notifications %}
+        {% for note in notifications %}
+        <div class="notification-card">
+            <p>{{ note["message"] }}</p>
+            <small>{{ note["created_at"] }}</small>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No notifications available.</p>
+    {% endif %}
+</div>
+
+
+<!-- Chat Widget -->
+{% include "chat_widget.html" %}
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+</body>
+
+<a href="/chat"
+class="chatbot-button">
+
+💬
+
+</a>
+
+</html>
