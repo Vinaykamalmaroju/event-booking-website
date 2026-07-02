@@ -1127,107 +1127,11 @@ def provider_profile(id):
         reviews=reviews
     )
 
-@app.route("/admin-dashboard")
-@app.route("/admin")
-def admin():
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    search = request.args.get("search", "")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    # Search Bookings
-    if search:
-        cursor.execute(
-            "SELECT * FROM bookings WHERE name LIKE ?",
-            ('%' + search + '%',)
-        )
-    else:
-        cursor.execute("SELECT * FROM bookings")
-
-    bookings = cursor.fetchall()
-
-    # Booking Counts
-    cursor.execute("SELECT COUNT(*) FROM bookings")
-    total = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM bookings WHERE status='Approved'")
-    approved = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM bookings WHERE status='Pending'")
-    pending = cursor.fetchone()[0]
-
-    # Provider Counts
-    cursor.execute("SELECT COUNT(*) FROM providers")
-    total_providers = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM providers WHERE status='Approved'")
-    approved_providers = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM providers WHERE status='Pending'")
-    pending_providers = cursor.fetchone()[0]
-
-    # Contact Messages
-    cursor.execute("SELECT COUNT(*) FROM contacts")
-    total_messages = cursor.fetchone()[0]
-
-    # Support Requests
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM support_messages
-        WHERE status='Open'
-    """)
-
-    open_support_requests = cursor.fetchone()[0]
-
-    conn.close()
-
-    return render_template(
-        "admin.html",
-        bookings=bookings,
-        total=total,
-        approved=approved,
-        pending=pending,
-        total_providers=total_providers,
-        approved_providers=approved_providers,
-        pending_providers=pending_providers,
-        total_messages=total_messages,
-        open_support_requests=open_support_requests,
-        search=search
-    )
-    
-
-# ----------------------------
-# Admin Login Page
-# ----------------------------
-@app.route("/admin-login")
-def admin_login():
-    return render_template("admin_login.html")
-
-
-
-
-# ----------------------------
-# Login Check
-# ----------------------------
-@app.route("/login", methods=["POST"])
-def login():
-
-    username = request.form["username"]
-    password = request.form["password"]
-
-    if username == "admin" and password == "admin123":
-        session["admin"] = True
-        return redirect("/admin")
-
-    return "<h1>Invalid Username or Password</h1>"
 # ----------------------------
 # Admin Dashboard
 # ----------------------------
 @app.route("/admin")
+@app.route("/admin-dashboard")
 def admin():
 
     if "admin" not in session:
