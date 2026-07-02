@@ -1363,6 +1363,7 @@ def update(id):
     return redirect("/admin")
 
 
+
 # ----------------------------
 # Delete Booking
 # ----------------------------
@@ -1943,6 +1944,20 @@ def provider_login_post():
         return redirect("/provider-dashboard")
 
     return "<h2>Invalid Login or Approval Pending</h2>"
+
+@app.route("/delete-provider/<int:provider_id>")
+def delete_provider(provider_id):
+    conn = sqlite3.connect("bookings.db")
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM providers WHERE id=?", (provider_id,))
+    conn.commit()
+    conn.close()
+
+    flash("Provider deleted successfully!", "success")
+    return redirect("/admin-dashboard")
+
+
 @app.route("/provider-dashboard")
 def provider_dashboard():
 

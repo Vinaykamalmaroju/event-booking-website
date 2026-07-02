@@ -1,0 +1,142 @@
+@font-face {
+	font-family: 'svp-icons';
+	src: url('../../fonts/svp-icons.eot?z6vuyh');
+	src: url('../../fonts/svp-icons.svg?z6vuyh#svp-icons') format('svg'),
+	url('../../fonts/svp-icons.eot?#iefixz6vuyh') format('embedded-opentype'),
+	url('../../fonts/svp-icons.woff?z6vuyh') format('woff'),
+	url('../../fonts/svp-icons.ttf?z6vuyh') format('truetype');
+	font-display: swap;
+	font-weight: normal;
+	font-style: normal;
+}
+.glyph {
+	position: relative;
+	display: inline-block;
+	font-family: 'svp-icons' !important;
+	font-style: normal;
+	font-weight: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+.glyph:before {
+	speak: none;
+	font-weight: normal;
+	font-variant: normal;
+	font-style: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+.glyph.center {
+	text-align: center;
+	top: 0;
+	width: inherit;
+	height: inherit;
+	display: table-cell;
+	vertical-align: middle;
+}
+.icon-close:before {
+	content: "\e019";
+}
+.sticky_player iframe {
+	position: fixed!important;
+	top: auto!important;
+	bottom: 10px;
+	left: auto!important;
+	width: 100%!important;
+	max-width: 280px;
+	height: 157px!important;
+	max-height: 157px;
+	z-index: 99999;
+	box-shadow: rgba(160, 160, 160, 0.62) 0 0 10px;
+	-webkit-animation-name: fadeInUp;
+	animation-name: fadeInUp;
+	-webkit-animation-duration: 0.6s;
+	animation-duration: 0.6s;
+	-webkit-animation-fill-mode: both;
+	animation-fill-mode: both;
+}
+[animation] {
+	transition: .3s ease;
+}
+.sticky_player[animation=left] iframe {
+	left: 10px!important;
+}
+.sticky_player[animation=right] iframe {
+	right: 10px;
+}
+.sticky_player button#close_sticky {
+	position: fixed;
+	top: auto;
+	bottom: 158px;
+	width: auto;
+	height: auto;
+	padding: 6px;
+	cursor: pointer;
+	background: rgba(76, 76, 76, 0.76);
+	border-radius: 50%;
+	border: 1.2px solid #fff;
+	box-shadow: 4px 4px 14px -5px #fff;
+	color: #fff!important;
+	font-size: 8px;
+	text-align: center;
+	line-height: normal;
+	z-index: 99999;
+	outline: none;
+	transition: .4s ease-in-out;
+	-webkit-animation-name: fadeInUp;
+	animation-name: fadeInUp;
+	-webkit-animation-duration: 1s;
+	animation-duration: 1s;
+	-webkit-animation-fill-mode: both;
+	animation-fill-mode: both;
+}
+button#close_sticky:hover {
+	background: #fff;
+	color: #303030!important;
+	font-weight: 400;
+}
+button#close_sticky:active {
+	transform: scale(.9);
+	transition: unset;
+}
+.sticky_player[animation=left] button {
+	left: 7px;
+}
+.sticky_player[animation=right] button  {
+	right: 7px;
+}
+@-webkit-keyframes fadeInUp {
+	0% {
+		opacity: 0;
+		-webkit-transform: translate3d(0, 100%, 0);
+		transform: translate3d(0, 100%, 0);
+	}
+	100% {
+		opacity: 1;
+		-webkit-transform: none;
+		transform: none;
+	}
+}
+
+@keyframes fadeInUp {
+	0% {
+		opacity: 0;
+		-webkit-transform: translate3d(0, 100%, 0);
+		transform: translate3d(0, 100%, 0);
+	}
+	100% {
+		opacity: 1;
+		-webkit-transform: none;
+		transform: none;
+	}
+}
+@media screen and (max-width: 560px) {
+	.sticky_player iframe {
+		max-width: 170px;
+		max-height: 96px;
+	}
+	.sticky_player button#close_sticky {
+		bottom: 94px;
+	}
+}

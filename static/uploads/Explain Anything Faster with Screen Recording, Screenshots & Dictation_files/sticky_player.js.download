@@ -1,0 +1,491 @@
+/**
+ * StickyPlayer constructor
+ *
+ * This module catch all player active instances regardless of their type
+ * aka Video app or Single player. Module is only included if any
+ * instances has sticky/floating options enabled
+ *
+ * @constructor
+ */
+function StickyPlayer() {
+	this.HIDE_BUTTON = 0;
+	this.SHOW_BUTTON = 1;
+	this.instances = {};
+	this.onScrollListener = null;
+	this.onClickCloseSticky = null;
+	this.activePlayerInstance = null;
+
+	this.getPlayerObjectId = function(instance) {
+		return instance.player_object_id || instance.use_div;
+	};
+
+	this.isVideoAppsPlayer = function(id) {
+		return isNaN(id);
+	};
+
+	this.getInstances = function() {
+		return this.instances;
+	};
+
+	this.getInstanceById = function(id) {
+		return this.instances[id];
+	};
+
+	this.addInstance = function(id, instance) {
+		this.instances[id] = instance;
+	};
+
+	this.remove = function(id) {
+		delete this.instances[id];
+	};
+
+	this.destroy = function() {
+		var stickyPlayer = document.querySelector('.sticky_player');
+
+		if(!stickyPlayer) {
+			return;
+		}
+
+		this.closeStickyPlayer(stickyPlayer);
+		this.instances = {};
+	};
+
+	/**
+	 * Fire sticky module
+	 *
+	 * @method
+	 */
+	this.fireSticky = function() {
+		this.attachStickyStyle();
+		this.attachOnScroll();
+	};
+
+	/**
+	 * Append css for sticky behavior
+	 *
+	 * @method
+	 */
+	this.attachStickyStyle = function() {
+		var style = document.createElement('link');
+
+		style.rel = 'stylesheet';
+		style.type = 'text/css';
+		style.href = (document.location.protocol === 'https:' ? 'https:' : 'http:') + '//' + scriptHost + '/css/sticky_player.css';
+
+		document.head.appendChild(style);
+	};
+
+
+	/**
+	 * Attach scroll event on window object to track sticky player activities
+	 *
+	 * @method
+	 */
+	this.attachOnScroll = function() {
+		this.onScrollListener = this.onScroll.bind(this);
+
+		window.addEventListener('scroll', this.onScrollListener);
+	};
+
+	/**
+	 * Delay closing state for given floated player
+	 *
+	 * @param {Element} iframe
+	 * @param {Element} button
+	 * @param {Element} containerIframe
+	 *
+	 * @method
+	 */
+	this.delayRemoveStickyAction = function(iframe, button, containerIframe) {
+		this.detachCloseEvent(button);
+		this.onScroll();
+
+		containerIframe.style.transition = '.4s linear .1s';
+		containerIframe.style.Moztransition = '.4s linear .1s';
+		containerIframe.style.opacity = 1;
+	};
+
+	/**
+	 * Attach close event for sticky X button
+	 *
+	 * @param {Element} button
+	 * @param {Element} containerIframe
+	 *
+	 * @method
+	 */
+	this.attachCloseEvent = function(button, containerIframe) {
+		this.onClickCloseSticky = this.closeStickyPlayer.bind(this, containerIframe);
+
+		button.addEventListener('click', this.onClickCloseSticky);
+	};
+
+	/**
+	 * Detach close event for sticky X button
+	 *
+	 * @param {Element} button
+	 *
+	 * @method
+	 */
+	this.detachCloseEvent = function(button) {
+		button.removeEventListener('click', this.onClickCloseSticky);
+	};
+
+	/**
+	 * Send state of the wall button in component
+	 * when sticky player is active/inactive
+	 *
+	 * @param {integer} value
+	 *
+	 * @method
+	 */
+	this.manageStickyWallButton = function(value) {
+		var activePlayerInstance = this.activePlayerInstance;
+		var playerObject = activePlayerInstance.player_object;
+
+		if(!playerObject || activePlayerInstance.vars.layout !== 'wall') {
+			return;
+		}
+
+		playerObject.sendMessage('executeCommand', {
+			cmd: 'showCloseButton',
+			value: value
+		});
+	};
+
+	/**
+	 * Check is holder player sticky
+	 *
+	 * @method
+	 */
+	this.isHolderStickyPlayer = function() {
+		var currentPlayerInstance = this.activePlayerInstance;
+
+		if(!currentPlayerInstance) {
+			return false;
+		}
+
+		var playerObjectId = this.getPlayerObjectId(currentPlayerInstance);
+		var containerIframe = document.getElementById(playerObjectId);
+
+		return containerIframe.classList.contains('sticky_player');
+	};
+
+	/**
+	 * Pause origin player and remove sticky from viewport
+	 *
+	 * @param {DOM} containerIframe
+	 *
+	 * @method
+	 */
+	this.closeStickyPlayer = function(containerIframe) {
+		this.activePlayerInstance.pause();
+		this.sendStickyClassMessages('remove');
+		this.removeStickyPlayerOptions(containerIframe);
+	};
+
+	/**
+	 * Remove sticky player options/settings
+	 *
+	 * @param {DOM} containerIframe
+	 *
+	 * @method
+	 */
+	this.removeStickyPlayerOptions = function(containerIframe) {
+		var iframe = containerIframe.querySelector('iframe');
+		var button = containerIframe.querySelector('#close_sticky');
+
+		this.manageStickyWallButton(this.SHOW_BUTTON);
+
+		containerIframe.style.transition = 'unset';
+		containerIframe.style.opacity = 0;
+		containerIframe.classList.remove('sticky_player');
+		button.remove();
+
+		setTimeout(
+			this.delayRemoveStickyAction.bind(
+				this, iframe, button, containerIframe
+			), 100
+		);
+	};
+
+	/**
+	 * This method is called dynamic by processManageStickyPlayer method with `add` or 'remove' prefix
+	 *
+	 * @param {DOM} containerIframe
+	 *
+	 * @method
+	 */
+	this.addStickyPlayerOptions = function(containerIframe) {
+		var iframe = containerIframe.querySelector('iframe');
+		var button = document.createElement('BUTTON');
+
+		this.manageStickyWallButton(this.HIDE_BUTTON);
+		this.attachCloseEvent(button, containerIframe);
+
+		button.setAttribute('id', 'close_sticky');
+		button.classList.add('glyph');
+		button.classList.add('icon-close');
+
+		containerIframe.insertBefore(button, iframe.nextSibling);
+	};
+
+	this.isInstanceInViewport = function(currentPlayerInstance) {
+		var playerContainerObjectId = this.getPlayerObjectId(currentPlayerInstance);
+		var playerContainer = document.getElementById(playerContainerObjectId);
+		var containerBounding = playerContainer.getBoundingClientRect();
+		var playerContainerOffsetBottom = containerBounding.bottom;
+		var playerContainerOffsetTop = containerBounding.top;
+		var playerBottom = currentPlayerInstance.playerBottom;
+
+		if(playerContainerOffsetTop <= -playerBottom) {
+			playerContainerOffsetBottom = -(Math.abs(playerContainerOffsetTop) - playerBottom);
+		}
+
+		return this.isScrolledIntoView(playerContainerOffsetTop, playerContainerOffsetBottom);
+	};
+
+	/**
+	 * Manage (receive) iframe messages for isPlaying and isComplete events
+	 *
+	 * @param {string} message
+	 * @param {bool} data
+	 * @param {Object} instance
+	 *
+	 * @method
+	 */
+	this.manageMessagePlayerActions = function(message, data, instance) {
+		var objectInstance = this.getObjectInstance(instance);
+		var iframeContainer = this.isStickyPlayer(objectInstance);
+		var isPlaying = message === 'isPlaying' && data === true;
+		var activePlayerInstance = this.activePlayerInstance;
+
+
+		if(activePlayerInstance !== null && isPlaying && activePlayerInstance !== instance && !this.isInstanceInViewport(activePlayerInstance)) {
+			this.activePlayerInstance.pause();
+		}
+
+		if(message === 'isComplete' && iframeContainer) {
+			this.sendStickyClassMessages('remove');
+			StickyPlayerContainer.removeStickyPlayerOptions(iframeContainer);
+		}
+		else if(!iframeContainer) {
+			StickyPlayerContainer.onScroll();
+		}
+	};
+
+	/**
+	 * Get correct instance between video app or single player
+	 *
+	 * @param {Object} instance
+	 *
+	 * @method
+	 */
+	this.getObjectInstance = function(instance) {
+		return instance.use_div ? instance.player_object : instance.player_instance;
+	};
+
+	/**
+	 * Check is sticky player by class
+	 *
+	 * @param {Object} objectInstance
+	 *
+	 * @method
+	 */
+	this.isStickyPlayer = function(objectInstance) {
+		var parent = objectInstance.parentNode;
+		var isSticky = parent.classList.contains('sticky_player');
+
+		return isSticky ? parent : false;
+	};
+
+	/**
+	 * Check has active instance
+	 *
+	 * @param {Object} instance
+	 *
+	 * @method
+	 */
+	this.hasNotActiveStickyInstance = function(instance) {
+		return Object.keys(instance).length === 0;
+	};
+
+	/**
+	 * Add/Remove sticky player class and execute command
+	 *
+	 * @param {Element} containerIframe
+	 * @param {string} command
+	 *
+	 * @method
+	 */
+	this.processManageStickyPlayer = function(containerIframe, command) {
+		this.sendStickyClassMessages(command);
+
+		this[command + 'StickyPlayerOptions'](containerIframe);
+
+		containerIframe.classList[command]('sticky_player');
+	};
+
+	this.sendStickyClassMessages = function(command) {
+		if(this.isVideoAppInstance(this.activePlayerInstance)) {
+			this.activePlayerInstance.player_object.sendMessage('stickyPlayer', {
+				cmd: 'stickyPlayer',
+				value: command === 'add'
+			});
+		}
+	};
+
+	/**
+	 * Show/Hide sticky player into view port according matched conditions
+	 *
+	 * @method
+	 */
+	this.onScroll = function() {
+		var stickyPlayer = document.querySelector('.sticky_player');
+		var currentPlayerInstance = this.getCurrentPlayerInstance();
+
+		if(this.hasNotActiveStickyInstance(currentPlayerInstance)) {
+			if(stickyPlayer && this.activePlayerInstance) {
+				this.processManageStickyPlayer(stickyPlayer, 'remove');
+			}
+
+			return;
+		}
+
+		var playerObjectId = this.getPlayerObjectId(currentPlayerInstance);
+		var containerIframe = document.getElementById(playerObjectId);
+		var isSticky = containerIframe.classList.contains('sticky_player');
+		var isVideoApps = this.isVideoAppInstance(currentPlayerInstance);
+		var isPlayerPlaying = currentPlayerInstance.isPlaying();
+		var containerIframeOffsetsTop = containerIframe.getBoundingClientRect().top;
+		var playerBottomOffset = currentPlayerInstance.playerBottom || containerIframe.getBoundingClientRect().bottom;
+		var absoluteOffsetTop = Math.abs(containerIframeOffsetsTop);
+		var isUnderBottomOffset = absoluteOffsetTop < playerBottomOffset;
+
+		if(isVideoApps && containerIframeOffsetsTop <= -playerBottomOffset) {
+			playerBottomOffset = -(absoluteOffsetTop - playerBottomOffset);
+		}
+
+		var isVisible = this.isScrolledIntoView(containerIframeOffsetsTop, playerBottomOffset);
+
+		if(!isVisible && !isSticky && isPlayerPlaying) {
+			if(this.activePlayerInstance && stickyPlayer) {
+				this.processManageStickyPlayer(stickyPlayer, 'remove');
+			}
+
+			this.activePlayerInstance = currentPlayerInstance;
+			this.processManageStickyPlayer(containerIframe, 'add');
+		}
+		else if(isVisible && isSticky || (!isPlayerPlaying && isSticky && isUnderBottomOffset)) {
+			this.processManageStickyPlayer(containerIframe, 'remove');
+		}
+	};
+
+	/**
+	 * Check is visible into viewport
+	 *
+	 * @param {number} top
+	 * @param {number} bottom
+	 *
+	 * @method
+	 */
+	this.isScrolledIntoView = function(top, bottom) {
+		return top < window.innerHeight && bottom >= 0;
+	};
+
+	/**
+	 * Get active player instance object
+	 *
+	 * @method
+	 */
+	this.getCurrentPlayerInstance = function() {
+		var playerInstance = {};
+		var playerInstances = this.getInstances();
+		var playerInstanceOffsetBottom = -100000;
+		var playerInstanceOffsetTop = 100000;
+
+		for(var id in playerInstances) {
+			if(!playerInstances.hasOwnProperty(id)) {
+				continue;
+			}
+
+			var isVideoApp = this.isVideoAppsPlayer(id);
+			var currentPlayerInstance = playerInstances[id];
+			var playerContainerObjectId = this.getPlayerObjectId(currentPlayerInstance);
+			var playerContainer = document.getElementById(playerContainerObjectId);
+			var containerBounding = playerContainer.getBoundingClientRect();
+			var playerContainerOffsetBottom = containerBounding.bottom;
+			var playerContainerOffsetTop = containerBounding.top;
+			var isPlayerPlaying = currentPlayerInstance.isPlaying();
+			var playerBottom = currentPlayerInstance.playerBottom;
+
+			if(isVideoApp && playerContainerOffsetTop <= -playerBottom) {
+				playerContainerOffsetBottom = -(Math.abs(playerContainerOffsetTop) - playerBottom);
+			}
+
+			var isContainerSticky = playerContainer.classList.contains('sticky_player');
+			var isManualPaused = isContainerSticky && !isPlayerPlaying;
+			var isVisible = this.isScrolledIntoView(playerContainerOffsetTop, playerContainerOffsetBottom);
+
+			if(isVisible && isPlayerPlaying) {
+				return {};
+			}
+
+			if(!isManualPaused && !isPlayerPlaying) {
+				continue;
+			}
+
+			var isUnder = playerContainerOffsetBottom < 0 && playerContainerOffsetBottom > playerInstanceOffsetBottom;
+			var isUpper = !isVisible && !isUnder;
+
+			if(isManualPaused || isUpper && this.upperInstanceNotPlaying(playerInstances, playerContainerOffsetTop, id)) {
+				playerInstance = currentPlayerInstance;
+				playerInstanceOffsetTop = playerContainerOffsetTop;
+			}
+			else if(isManualPaused || isUnder) {
+				playerInstance = currentPlayerInstance;
+				playerInstanceOffsetBottom = playerContainerOffsetBottom;
+			}
+		}
+
+		return playerInstance;
+	};
+
+	/**
+	 * Check is instance video app
+	 *
+	 * @param {Object} instance
+	 *
+	 * @method
+	 */
+	this.isVideoAppInstance = function(instance) {
+		return typeof instance.playerBottom !== 'undefined';
+	};
+
+	/**
+	 * Is upper player instance playing ?
+	 *
+	 * @param {Object} playerInstances
+	 * @param {Object} playerInstanceTop
+	 * @param {string} currentId
+	 *
+	 * @method
+	 */
+	this.upperInstanceNotPlaying = function(playerInstances, playerInstanceTop, currentId) {
+		for(var id in playerInstances) {
+			if(!playerInstances.hasOwnProperty(id) || currentId === id) {
+				continue;
+			}
+
+			var currentPlayerInstance = playerInstances[id];
+			var playerContainerObjectId = this.getPlayerObjectId(currentPlayerInstance);
+			var playerContainer = document.getElementById(playerContainerObjectId);
+			var top = playerContainer.getBoundingClientRect().top;
+
+			if((top < 0 || top < playerInstanceTop) && currentPlayerInstance.isPlaying()) {
+				return false;
+			}
+		}
+
+		return true;
+	};
+}
