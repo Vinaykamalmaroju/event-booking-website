@@ -47,66 +47,72 @@ print("=" * 50)
 
 def send_email(to_email, subject, body, attachment=None):
 
-    sender_email = "eventbookingproject@gmail.com"
-    app_password = "fcli uryq nyme kooo"
+    sender_email = os.environ.get(
+        "EMAIL",
+        "eventbookingproject@gmail.com"
+    )
 
-    msg = MIMEMultipart()
+    app_password = os.environ.get(
+        "PASSWORD",
+        "fcli uryq nyme kooo"
+    )
 
-    msg["Subject"] = subject
-    msg["From"] = sender_email
-    msg["To"] = to_email
+    try:
 
-    msg.attach(MIMEText(body, "plain"))
+        msg = MIMEMultipart()
 
-    if attachment:
+        msg["Subject"] = subject
+        msg["From"] = sender_email
+        msg["To"] = to_email
 
-        with open(attachment, "rb") as file:
+        msg.attach(MIMEText(body, "plain"))
 
-            part = MIMEApplication(file.read())
+        if attachment:
 
-            part.add_header(
-                "Content-Disposition",
-                "attachment",
-                filename=os.path.basename(attachment)
-            )
+            if os.path.exists(attachment):
 
-            msg.attach(part)
+                with open(attachment, "rb") as file:
 
-    server = smtplib.SMTP("smtp.gmail.com", 587)
+                    part = MIMEApplication(file.read())
 
-    server.starttls()
+                    part.add_header(
+                        "Content-Disposition",
+                        "attachment",
+                        filename=os.path.basename(attachment)
+                    )
 
-    server.login(sender_email, app_password)
+                    msg.attach(part)
 
-    server.send_message(msg)
-
-    server.quit()
-
-def create_notification(user_email, message, notification_type):
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO notifications(
-            user_email,
-            message,
-            notification_type,
-            status,
-            created_at
+        server = smtplib.SMTP(
+            "smtp.gmail.com",
+            587,
+            timeout=20
         )
-        VALUES(?,?,?,?,?)
-    """, (
-        user_email,
-        message,
-        notification_type,
-        "Unread",
-        datetime.now().strftime("%d-%m-%Y %H:%M")
-    ))
 
-    conn.commit()
-    conn.close()
+        server.ehlo()
 
+        server.starttls()
+
+        server.ehlo()
+
+        server.login(
+            sender_email,
+            app_password
+        )
+
+        server.send_message(msg)
+
+        server.quit()
+
+        print("✅ Email sent successfully.")
+
+        return True
+
+    except Exception as e:
+
+        print("❌ Email Error:", str(e))
+
+        return False
 # ======================================================
 # CREATE DATABASE TABLES
 # ======================================================
@@ -653,7 +659,7 @@ def provider_login():
 def provider_register():
     return render_template("provider_register.html")
 
-@app.route("/provider-submit", methods=["POST"])
+@app@app.route("/provider-submit", methods=["POST"])
 def provider_submit():
 
     name = request.form["name"]
@@ -664,7 +670,6 @@ def provider_submit():
     experience = request.form["experience"]
     description = request.form["description"]
 
-    # NEW PACKAGE PRICES
     basic_package = request.form["basic_package"]
     premium_package = request.form["premium_package"]
     luxury_package = request.form["luxury_package"]
@@ -745,7 +750,10 @@ The admin will review your profile soon.
 Thank you for joining Event Booking Website.
 """
 
-    send_email(email, subject, body)
+    email_sent = send_email(email, subject, body)
+
+    if not email_sent:
+        print("Email could not be sent.")
 
     return render_template("provider_success.html")
 
@@ -753,10 +761,8 @@ Thank you for joining Event Booking Website.
 def save_provider(id):
 
     if "customer_email" not in session:
-
         flash("Please login first.")
-
-    return redirect("/customer-login")
+        return redirect("/customer-login")
 
     customer_email = session["customer_email"]
 
@@ -764,26 +770,27 @@ def save_provider(id):
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT *
-    FROM wishlist
-    WHERE customer_email=?
-    AND provider_id=?
-    """,(customer_email,id))
+        SELECT *
+        FROM wishlist
+        WHERE customer_email=?
+        AND provider_id=?
+    """, (customer_email, id))
 
     already_saved = cursor.fetchone()
 
     if already_saved:
-
         flash("Provider already saved.")
 
     else:
-
         cursor.execute("""
-        INSERT INTO wishlist
-        (customer_email,provider_id,saved_date)
-
-        VALUES(?,?,?)
-        """,(customer_email,id,datetime.now().strftime("%d-%m-%Y")))
+            INSERT INTO wishlist
+            (customer_email, provider_id, saved_date)
+            VALUES(?,?,?)
+        """, (
+            customer_email,
+            id,
+            datetime.now().strftime("%d-%m-%Y")
+        ))
 
         conn.commit()
 
