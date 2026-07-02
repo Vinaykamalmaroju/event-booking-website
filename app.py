@@ -368,6 +368,7 @@ def save_availability():
 def booking():
 
     conn = sqlite3.connect("bookings.db")
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -400,37 +401,31 @@ def submit():
     conn = sqlite3.connect("bookings.db")
     cursor = conn.cursor()
 
+    # Check if the selected provider already has a booking on this date
     cursor.execute("""
-SELECT
-    basic_package,
-    premium_package,
-    luxury_package
-FROM providers
-WHERE email=?
-""", (provider_email,))
-    provider = cursor.fetchone()
+        SELECT COUNT(*)
+        FROM bookings
+        WHERE provider_email=? AND date=?
+    """, (provider_email, date))
 
-    # Find an approved provider for this service
+    provider_bookings = cursor.fetchone()[0]
+
+    if provider_bookings > 0:
+        conn.close()
+        return """
+        <h2 style='text-align:center;color:red;margin-top:80px;'>
+            Provider is already booked on this date.
+            <br><br>
+            Please select another provider or another date.
+        </h2>
+        """
+
+    # Check maximum bookings allowed for the date
     cursor.execute("""
-        SELECT email
-        FROM providers
-        WHERE service=?
-        AND status='Approved'
-        LIMIT 1
-    """, (service,))
-
-    provider = cursor.fetchone()
-
-    provider_email = ""
-
-    if provider:
-        provider_email = provider[0]
-
-    # Check how many bookings exist for this date
-    cursor.execute(
-        "SELECT COUNT(*) FROM bookings WHERE date=?",
-        (date,)
-    )
+        SELECT COUNT(*)
+        FROM bookings
+        WHERE date=?
+    """, (date,))
 
     booking_count = cursor.fetchone()[0]
 
@@ -440,30 +435,13 @@ WHERE email=?
         <h2 style='text-align:center;color:red;margin-top:80px;'>
             Sorry!
             <br><br>
-            This date is already fully booked.
+            This date is fully booked.
             <br><br>
             Please choose another date.
         </h2>
         """
 
-    conn.close()
-
-    # Save booking details temporarily
-    booking = {
-        "name": name,
-        "email": email,
-        "phone": phone,
-        "date": date,
-        "service": service,
-        "provider_email": provider_email
-    }
-
-    session["booking"] = booking
-
-    # Save booking into database
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
+    # Save booking
     cursor.execute("""
         INSERT INTO bookings(
             name,
@@ -475,21 +453,32 @@ WHERE email=?
             status
         )
         VALUES(?,?,?,?,?,?,?)
-    """,(
-        booking["name"],
-        booking["email"],
-        booking["phone"],
-        booking["date"],
-        booking["service"],
-        booking["provider_email"],
+    """, (
+        name,
+        email,
+        phone,
+        date,
+        service,
+        provider_email,
         "Pending"
     ))
 
     conn.commit()
     conn.close()
 
+    booking = {
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "date": date,
+        "service": service,
+        "provider_email": provider_email
+    }
+
+    session["booking"] = booking
+
     # Send email to provider
-    if booking["provider_email"]:
+    if provider_email:
 
         provider_subject = "New Booking Assigned"
 
@@ -498,21 +487,23 @@ Hello,
 
 A new booking has been assigned.
 
-Customer Name : {booking['name']}
-Customer Email : {booking['email']}
-Phone : {booking['phone']}
+Customer Name : {name}
+Customer Email : {email}
+Phone : {phone}
 
-Service : {booking['service']}
-Date : {booking['date']}
+Service : {service}
+Date : {date}
 """
 
         send_email(
-            booking["provider_email"],
+            provider_email,
             provider_subject,
             provider_body
         )
 
     return redirect("/payment-success")
+
+
 def contact():
     return render_template("contact.html")
 @app.route("/review")
