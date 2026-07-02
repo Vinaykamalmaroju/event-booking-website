@@ -659,7 +659,7 @@ def provider_login():
 def provider_register():
     return render_template("provider_register.html")
 
-@app@app.route("/provider-submit", methods=["POST"])
+@app.route("/provider-submit", methods=["POST"])
 def provider_submit():
 
     name = request.form["name"]
