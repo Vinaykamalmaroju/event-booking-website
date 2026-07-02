@@ -1127,6 +1127,27 @@ def provider_profile(id):
         reviews=reviews
     )
 
+
+@app.route("/admin-login")
+def admin_login():
+    return render_template("admin_login.html")
+
+
+@app.route("/admin-login", methods=["POST"])
+def admin_login_post():
+
+    username = request.form["username"]
+    password = request.form["password"]
+
+    # Change these credentials if needed
+    if username == "admin" and password == "admin123":
+        session["admin"] = True
+        return redirect("/admin")
+
+    flash("Invalid username or password")
+    return redirect("/admin-login")
+
+
 # ----------------------------
 # Admin Dashboard
 # ----------------------------
