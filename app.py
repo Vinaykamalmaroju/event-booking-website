@@ -2105,6 +2105,20 @@ def provider_bookings():
         total_earnings=total_earnings,
         month_earnings=month_earnings
     )
+
+@app.route("/login", methods=["POST"])
+def login():
+
+    username = request.form["username"]
+    password = request.form["password"]
+
+    if username == "admin" and password == "admin123":
+        session["admin"] = True
+        return redirect("/admin")
+
+    return "Invalid Login"
+
+
 @app.route("/logout")
 def logout():
 
