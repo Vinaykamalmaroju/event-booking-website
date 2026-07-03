@@ -1201,65 +1201,36 @@ def provider_submit():
         "success"
     )
 
-    return redirect("/provider-login")
+@app.route("/provider-login", methods=["GET", "POST"])
+def provider_login():
 
+    if request.method == "GET":
+        return render_template("provider_login.html")
 
-
-# ==========================================================
-# PROVIDER LOGIN
-# ==========================================================
-
-@app.route("/provider-login", methods=["POST"])
-def provider_login_post():
-
-    email = request.form["email"].strip().lower()
+    email = request.form["email"]
     password = request.form["password"]
 
-    conn = get_db()
+    conn = sqlite3.connect("bookings.db")
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
-
         FROM providers
-
-        WHERE
-            email=?
-        AND
-            password=?
-        AND
-            status='Approved'
-    """, (
-
-        email,
-        password
-
-    ))
+        WHERE email=?
+        AND password=?
+        AND status='Approved'
+    """, (email, password))
 
     provider = cursor.fetchone()
-
     conn.close()
 
     if provider:
-
-        session["provider_id"] = provider["id"]
-        session["provider_email"] = provider["email"]
-        session["provider_name"] = provider["name"]
-
-        flash(
-            "Welcome Provider!",
-            "success"
-        )
-
+        session["provider"] = provider["email"]
         return redirect("/provider-dashboard")
 
-    flash(
-        "Invalid Login or Approval Pending.",
-        "danger"
-    )
-
+    flash("Invalid email/password or approval pending.")
     return redirect("/provider-login")
-
 
 # ==========================================================
 # PROVIDER DASHBOARD
