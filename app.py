@@ -1109,7 +1109,6 @@ print("=" * 60)
 
 @app.route("/provider-register")
 def provider_register():
-
     return render_template("provider_register.html")
 
 
@@ -1120,43 +1119,60 @@ def provider_register():
 @app.route("/provider-submit", methods=["POST"])
 def provider_submit():
 
-    name = request.form["name"]
-    email = request.form["email"].strip().lower()
-    password = request.form["password"]
-    phone = request.form["phone"]
-    service = request.form["service"]
-    experience = request.form["experience"]
-    description = request.form["description"]
+    try:
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        phone = request.form.get("phone", "").strip()
+        service = request.form.get("service", "")
+        experience = request.form.get("experience", "")
+        description = request.form.get("description", "")
 
-    basic_package = request.form["basic_package"]
-    premium_package = request.form["premium_package"]
-    luxury_package = request.form["luxury_package"]
+        basic_package = request.form.get("basic_package", "")
+        premium_package = request.form.get("premium_package", "")
+        luxury_package = request.form.get("luxury_package", "")
 
-    image = request.files["image"]
+        image = request.files.get("image")
 
-    filename = save_image(image)
+        filename = ""
 
-    conn = get_db()
-    cursor = conn.cursor()
+        if image and image.filename:
+            filename = save_image(image)
 
-    cursor.execute(
-        "SELECT id FROM providers WHERE email=?",
-        (email,)
-    )
+        conn = get_db()
+        cursor = conn.cursor()
 
-    if cursor.fetchone():
-
-        conn.close()
-
-        flash(
-            "Email already registered.",
-            "danger"
+        cursor.execute(
+            "SELECT id FROM providers WHERE email=?",
+            (email,)
         )
 
-        return redirect("/provider-register")
+        if cursor.fetchone():
+            conn.close()
+            flash("Email already registered.", "danger")
+            return redirect("/provider-register")
 
-    cursor.execute("""
-        INSERT INTO providers
+        cursor.execute("""
+            INSERT INTO providers
+            (
+                name,
+                email,
+                password,
+                phone,
+                service,
+                experience,
+                description,
+                image,
+                basic_package,
+                premium_package,
+                luxury_package,
+                status
+            )
+            VALUES
+            (
+                ?,?,?,?,?,?,?,?,?,?,?,?
+            )
+        """,
         (
             name,
             email,
@@ -1165,41 +1181,45 @@ def provider_submit():
             service,
             experience,
             description,
-            image,
+            filename,
             basic_package,
             premium_package,
             luxury_package,
-            status
+            "Pending"
+        ))
+
+        conn.commit()
+        conn.close()
+
+        flash(
+            "Registration Successful. Waiting for Admin Approval.",
+            "success"
         )
 
-        VALUES
-        (
-            ?,?,?,?,?,?,?,?,?,?,?,?
-        )
-    """, (
+        return redirect("/provider-login")
 
-        name,
-        email,
-        password,
-        phone,
-        service,
-        experience,
-        description,
-        filename,
-        basic_package,
-        premium_package,
-        luxury_package,
-        "Pending"
+    except Exception as e:
+        print("PROVIDER REGISTER ERROR:", e)
+        flash(str(e), "danger")
+        return redirect("/provider-register")
+    except Exception as e:
 
-    ))
+        import traceback
+        traceback.print_exc()
 
-    conn.commit()
-    conn.close()
+        return f"""
+        <h2>{type(e).__name__}</h2>
+        <pre>{e}</pre>
+        """, 500
 
-    flash(
-        "Registration Successful. Waiting for Admin Approval.",
-        "success"
-    )
+
+# ==========================================================
+# PROVIDER LOGIN
+# ==========================================================
+
+# ==========================================================
+# PROVIDER LOGIN
+# ==========================================================
 
 @app.route("/provider-login", methods=["GET", "POST"])
 def provider_login():
@@ -1207,31 +1227,44 @@ def provider_login():
     if request.method == "GET":
         return render_template("provider_login.html")
 
-    email = request.form["email"]
-    password = request.form["password"]
+    email = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
 
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
         FROM providers
-        WHERE email=?
-        AND password=?
-        AND status='Approved'
-    """, (email, password))
+        WHERE email = ?
+        AND password = ?
+        AND status = ?
+    """, (email, password, "Approved"))
 
     provider = cursor.fetchone()
+
     conn.close()
 
-    if provider:
-        session["provider"] = provider["email"]
+    if provider is not None:
+
+        session["provider_id"] = provider["id"]
+        session["provider_email"] = provider["email"]
+        session["provider_name"] = provider["name"]
+
+        flash(
+            "Login Successful.",
+            "success"
+        )
+
         return redirect("/provider-dashboard")
 
-    flash("Invalid email/password or approval pending.")
-    return redirect("/provider-login")
+    flash(
+        "Invalid email, password, or your account is not yet approved.",
+        "danger"
+    )
 
+    return redirect("/provider-login")
 # ==========================================================
 # PROVIDER DASHBOARD
 # ==========================================================
@@ -1240,83 +1273,106 @@ def provider_login():
 def provider_dashboard():
 
     if not provider_logged_in():
-
         return redirect("/provider-login")
 
-    provider = get_provider(
-        session["provider_id"]
-    )
+    provider = get_provider(session.get("provider_id"))
+
+    if provider is None:
+        flash("Provider not found.", "danger")
+        return redirect("/provider-login")
 
     conn = get_db()
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    # Total Bookings
     cursor.execute("""
         SELECT COUNT(*)
-
         FROM bookings
-
         WHERE provider_email=?
-    """, (
-
-        provider["email"],
-
-    ))
+    """, (provider["email"],))
 
     total_bookings = cursor.fetchone()[0]
 
+    # Approved Bookings
     cursor.execute("""
         SELECT COUNT(*)
-
         FROM bookings
-
-        WHERE
-            provider_email=?
-        AND
-            status='Approved'
-    """, (
-
-        provider["email"],
-
-    ))
+        WHERE provider_email=?
+        AND status='Approved'
+    """, (provider["email"],))
 
     approved_bookings = cursor.fetchone()[0]
+
+    # Default values
+    total_earnings = 0
+    month_earnings = 0
+
+    try:
+
+        cursor.execute("""
+            SELECT IFNULL(SUM(amount),0)
+            FROM bookings
+            WHERE provider_email=?
+            AND status='Approved'
+        """, (provider["email"],))
+
+        total_earnings = cursor.fetchone()[0]
+
+        cursor.execute("""
+            SELECT IFNULL(SUM(amount),0)
+            FROM bookings
+            WHERE provider_email=?
+            AND status='Approved'
+            AND strftime('%Y-%m', booking_date)=strftime('%Y-%m','now')
+        """, (provider["email"],))
+
+        month_earnings = cursor.fetchone()[0]
+
+    except Exception as e:
+        print("Earnings Error:", e)
 
     conn.close()
 
     return render_template(
-
         "provider_dashboard.html",
-
         provider=provider,
-
         total_bookings=total_bookings,
-
-        approved_bookings=approved_bookings
-
+        approved_bookings=approved_bookings,
+        total_earnings=total_earnings,
+        month_earnings=month_earnings
     )
 
 
 # ==========================================================
-# PROVIDER PROFILE
+# EDIT PROVIDER PROFILE
+# ==========================================================
+
+# ==========================================================
+# PROVIDER EDIT PROFILE
 # ==========================================================
 
 @app.route("/provider-edit")
 def provider_edit():
 
     if not provider_logged_in():
-
         return redirect("/provider-login")
 
-    provider = get_provider(
-        session["provider_id"]
-    )
+    provider_id = session.get("provider_id")
+
+    if not provider_id:
+        flash("Please login again.", "danger")
+        return redirect("/provider-login")
+
+    provider = get_provider(provider_id)
+
+    if provider is None:
+        flash("Provider not found.", "danger")
+        return redirect("/provider-login")
 
     return render_template(
-
         "provider_edit.html",
-
         provider=provider
-
     )
 
 
@@ -1328,85 +1384,103 @@ def provider_edit():
 def provider_update():
 
     if not provider_logged_in():
-
         return redirect("/provider-login")
 
-    provider_id = session["provider_id"]
+    provider_id = session.get("provider_id")
 
-    name = request.form["name"]
-    phone = request.form["phone"]
-    service = request.form["service"]
-    experience = request.form["experience"]
-    description = request.form["description"]
+    if not provider_id:
+        flash("Session expired. Please login again.", "danger")
+        return redirect("/provider-login")
 
-    image = request.files["image"]
+    name = request.form.get("name", "").strip()
+    phone = request.form.get("phone", "").strip()
+    service = request.form.get("service", "")
+    experience = request.form.get("experience", "")
+    description = request.form.get("description", "")
+
+    image = request.files.get("image")
 
     conn = get_db()
     cursor = conn.cursor()
 
-    if image and image.filename != "":
+    try:
 
-        filename = save_image(image)
+        cursor.execute(
+            "SELECT id FROM providers WHERE id=?",
+            (provider_id,)
+        )
 
-        cursor.execute("""
-            UPDATE providers
+        if cursor.fetchone() is None:
+            conn.close()
+            flash("Provider not found.", "danger")
+            return redirect("/provider-login")
 
-            SET
+        if image and image.filename != "":
 
-                name=?,
-                phone=?,
-                service=?,
-                experience=?,
-                description=?,
-                image=?
+            filename = save_image(image)
 
-            WHERE id=?
-        """, (
+            cursor.execute("""
+                UPDATE providers
+                SET
+                    name=?,
+                    phone=?,
+                    service=?,
+                    experience=?,
+                    description=?,
+                    image=?
+                WHERE id=?
+            """, (
+                name,
+                phone,
+                service,
+                experience,
+                description,
+                filename,
+                provider_id
+            ))
 
-            name,
-            phone,
-            service,
-            experience,
-            description,
-            filename,
-            provider_id
+        else:
 
-        ))
+            cursor.execute("""
+                UPDATE providers
+                SET
+                    name=?,
+                    phone=?,
+                    service=?,
+                    experience=?,
+                    description=?
+                WHERE id=?
+            """, (
+                name,
+                phone,
+                service,
+                experience,
+                description,
+                provider_id
+            ))
 
-    else:
+        conn.commit()
 
-        cursor.execute("""
-            UPDATE providers
+        session["provider_name"] = name
 
-            SET
+        flash(
+            "Profile Updated Successfully.",
+            "success"
+        )
 
-                name=?,
-                phone=?,
-                service=?,
-                experience=?,
-                description=?
+    except Exception as e:
 
-            WHERE id=?
-        """, (
+        conn.rollback()
+        print("Provider Update Error:", e)
 
-            name,
-            phone,
-            service,
-            experience,
-            description,
-            provider_id
+        flash(
+            "Unable to update profile.",
+            "danger"
+        )
 
-        ))
+    finally:
 
-    conn.commit()
-    conn.close()
-
-    session["provider_name"] = name
-
-    flash(
-        "Profile Updated Successfully.",
-        "success"
-    )
+        conn.close()
 
     return redirect("/provider-dashboard")
 
@@ -1424,7 +1498,7 @@ def provider_logout():
 
     flash(
         "Logged Out Successfully.",
-        "info"
+        "success"
     )
 
     return redirect("/")
@@ -1433,7 +1507,6 @@ def provider_logout():
 print("=" * 60)
 print("PART 5 LOADED SUCCESSFULLY")
 print("=" * 60)
-
 # ==========================================================
 # PART 6
 # BOOKING MODULE
