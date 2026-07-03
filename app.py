@@ -1,26 +1,69 @@
-import email
-from fileinput import filename
-import razorpay
-from flask import Flask, jsonify, render_template, request, redirect, session, Response,flash
-import sqlite3
+# ==========================================================
+# EVENT BOOKING WEBSITE
+# PART 1
+# Imports + Flask Configuration + Database Initialization
+# ==========================================================
+
 import os
-import csv
+import sqlite3
 import smtplib
-from email.mime.text import MIMEText
+import csv
+import razorpay
+
+from datetime import datetime
+
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    session,
+    jsonify,
+    Response,
+    flash
+)
+
 from werkzeug.utils import secure_filename
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
+
+from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-print("=" * 60)
-print("Current Working Directory:")
-print(os.getcwd())
 
-print("Database Path:")
-print(os.path.abspath("bookings.db"))
-print("=" * 60)
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph
+)
+
+from reportlab.lib.styles import getSampleStyleSheet
+
+# ==========================================================
+# FLASK APP
+# ==========================================================
 
 app = Flask(__name__)
+
+app.secret_key = "eventbooking123"
+
+# ==========================================================
+# UPLOAD FOLDER
+# ==========================================================
+
+UPLOAD_FOLDER = os.path.join("static", "uploads")
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# ==========================================================
+# DATABASE
+# ==========================================================
+
+DATABASE = "bookings.db"
+
+# ==========================================================
+# RAZORPAY
+# ==========================================================
+
 RAZORPAY_KEY_ID = "rzp_test_T6GkiSbrfeQVxj"
 
 RAZORPAY_KEY_SECRET = "pnbW3AkKwss1PG3ofxCLqvci"
@@ -31,41 +74,237 @@ client = razorpay.Client(
         RAZORPAY_KEY_SECRET
     )
 )
-app.secret_key = "eventbooking123"
-UPLOAD_FOLDER = "static/uploads"
-app.config["UPLOAD_FOLDER"] = os.path.join("static", "uploads")
 
-print("=" * 50)
-print("Current Working Directory:", os.getcwd())
-print("Database Location:", os.path.abspath("bookings.db"))
-print("=" * 50)
+# ==========================================================
+# DEBUG INFORMATION
+# ==========================================================
+
+print("=" * 60)
+print("EVENT BOOKING WEBSITE")
+print("=" * 60)
+print("Current Directory : ", os.getcwd())
+print("Database Path     : ", os.path.abspath(DATABASE))
+print("Upload Folder     : ", os.path.abspath(UPLOAD_FOLDER))
+print("=" * 60)
+
+# ==========================================================
+# DATABASE CONNECTION
+# ==========================================================
+
+def get_db():
+
+    conn = sqlite3.connect(DATABASE)
+
+    conn.row_factory = sqlite3.Row
+
+    return conn
+
+# ==========================================================
+# CREATE TABLES
+# ==========================================================
+
+def create_tables():
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    # ----------------------------------------
+    # CUSTOMERS
+    # ----------------------------------------
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS customers(
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        name TEXT NOT NULL,
+
+        email TEXT UNIQUE NOT NULL,
+
+        password TEXT NOT NULL,
+
+        phone TEXT
+
+    )
+    """)
+
+    # ----------------------------------------
+    # PROVIDERS
+    # ----------------------------------------
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS providers(
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        name TEXT,
+
+        email TEXT UNIQUE,
+
+        password TEXT,
+
+        phone TEXT,
+
+        service TEXT,
+
+        experience TEXT,
+
+        description TEXT,
+
+        image TEXT,
+
+        basic_package INTEGER,
+
+        premium_package INTEGER,
+
+        luxury_package INTEGER,
+
+        status TEXT DEFAULT 'Pending'
+
+    )
+    """)
+
+    # ----------------------------------------
+    # BOOKINGS
+    # ----------------------------------------
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS bookings(
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        name TEXT,
+
+        email TEXT,
+
+        phone TEXT,
+
+        date TEXT,
+
+        service TEXT,
+
+        provider_email TEXT,
+
+        amount REAL DEFAULT 0,
+
+        payment_id TEXT,
+
+        payment_status TEXT DEFAULT 'Pending',
+
+        status TEXT DEFAULT 'Pending'
+
+    )
+    """)
+
+    conn.commit()
+
+    conn.close()
+
+    print("✓ Basic database tables created successfully.")
+
+# ==========================================================
+# INITIALIZE DATABASE
+# ==========================================================
+
+create_tables()
+
+print("Application initialized successfully.")
+print("=" * 60)
+# ==========================================================
+# PART 2
+# HELPER FUNCTIONS
+# EMAIL SERVICE
+# DATABASE CONNECTION
+# FILE UPLOAD HELPERS
+# ==========================================================
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 
 
-# ======================================================
-# EMAIL FUNCTION
-# ======================================================
+# ==========================================================
+# DATABASE CONNECTION
+# ==========================================================
 
-def send_email(to_email, subject, body, attachment=None):
+DATABASE = "bookings.db"
+
+
+def get_db():
+
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+
+    return conn
+
+
+# ==========================================================
+# CREATE UPLOAD FOLDER
+# ==========================================================
+
+if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+
+    os.makedirs(app.config["UPLOAD_FOLDER"])
+
+
+# ==========================================================
+# SAVE IMAGE
+# ==========================================================
+
+def save_image(image):
+
+    if image is None:
+        return ""
+
+    if image.filename == "":
+        return ""
+
+    filename = secure_filename(image.filename)
+
+    image.save(
+        os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            filename
+        )
+    )
+
+    return filename
+
+
+# ==========================================================
+# SEND EMAIL
+# ==========================================================
+
+def send_email(
+    to_email,
+    subject,
+    body,
+    attachment=None
+):
 
     sender_email = os.environ.get(
         "EMAIL",
         "eventbookingproject@gmail.com"
     )
 
-    app_password = os.environ.get(
+    sender_password = os.environ.get(
         "PASSWORD",
-        "fcli uryq nyme kooo"
+        "YOUR_GMAIL_APP_PASSWORD"
     )
 
     try:
 
-        msg = MIMEMultipart()
+        message = MIMEMultipart()
 
-        msg["Subject"] = subject
-        msg["From"] = sender_email
-        msg["To"] = to_email
+        message["From"] = sender_email
+        message["To"] = to_email
+        message["Subject"] = subject
 
-        msg.attach(MIMEText(body, "plain"))
+        message.attach(
+            MIMEText(body, "plain")
+        )
 
         if attachment:
 
@@ -73,230 +312,248 @@ def send_email(to_email, subject, body, attachment=None):
 
                 with open(attachment, "rb") as file:
 
-                    part = MIMEApplication(file.read())
-
-                    part.add_header(
-                        "Content-Disposition",
-                        "attachment",
-                        filename=os.path.basename(attachment)
+                    part = MIMEApplication(
+                        file.read(),
+                        Name=os.path.basename(attachment)
                     )
 
-                    msg.attach(part)
+                part["Content-Disposition"] = (
+                    f'attachment; filename="{os.path.basename(attachment)}"'
+                )
+
+                message.attach(part)
 
         server = smtplib.SMTP(
             "smtp.gmail.com",
-            587,
-            timeout=20
+            587
         )
-
-        server.ehlo()
 
         server.starttls()
 
-        server.ehlo()
-
         server.login(
             sender_email,
-            app_password
+            sender_password
         )
 
-        server.send_message(msg)
+        server.send_message(message)
 
         server.quit()
 
-        print("✅ Email sent successfully.")
+        print("Email Sent Successfully")
 
         return True
 
-    except Exception as e:
+    except Exception as error:
 
-        print("❌ Email Error:", str(e))
+        print("Email Error:", error)
 
         return False
-# ======================================================
-# CREATE DATABASE TABLES
-# ======================================================
 
-def create_table():
 
-    conn = sqlite3.connect("bookings.db")
+# ==========================================================
+# LOGIN REQUIRED HELPERS
+# ==========================================================
+
+def customer_logged_in():
+
+    return "customer_id" in session
+
+
+def provider_logged_in():
+
+    return "provider_email" in session
+
+
+def admin_logged_in():
+
+    return "admin" in session
+
+
+# ==========================================================
+# CURRENT DATE & TIME
+# ==========================================================
+
+def current_datetime():
+
+    return datetime.now().strftime(
+        "%d-%m-%Y %H:%M:%S"
+    )
+
+
+# ==========================================================
+# CURRENT DATE
+# ==========================================================
+
+def current_date():
+
+    return datetime.now().strftime(
+        "%d-%m-%Y"
+    )
+
+
+# ==========================================================
+# CREATE NOTIFICATION
+# ==========================================================
+
+def add_notification(customer_id, message):
+
+    conn = get_db()
+
     cursor = conn.cursor()
 
-    # -----------------------------
-    # BOOKINGS
-    # -----------------------------
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS bookings(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT,
-        phone TEXT,
-        date TEXT,
-        service TEXT,
-        provider_email TEXT,
-        status TEXT DEFAULT 'Pending',
-        experience TEXT,
-        description TEXT,
-        image TEXT,
-        payment_id TEXT,
-        payment_status TEXT
-    )
-    """)
+        INSERT INTO notifications
+        (
+            customer_id,
+            message,
+            status,
+            created_at
+        )
 
-    # -----------------------------
-    # CONTACTS
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS contacts(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT,
-        phone TEXT,
-        message TEXT
-    )
-    """)
+        VALUES
+        (
+            ?, ?, ?, ?
+        )
+    """, (
 
-    # -----------------------------
-    # PROVIDERS
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS providers(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT,
-        password TEXT,
-        phone TEXT,
-        service TEXT,
-        experience TEXT,
-        description TEXT,
-        image TEXT,
-        status TEXT DEFAULT 'Pending'
-    )
-    """)
+        customer_id,
 
-    # -----------------------------
-    # REVIEWS
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS reviews(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        rating INTEGER,
-        review TEXT,
-        review_date TEXT
-    )
-    """)
+        message,
 
-    # -----------------------------
-    # PROVIDER AVAILABILITY
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS provider_availability(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        provider_email TEXT,
-        available_date TEXT,
-        status TEXT
-    )
-    """)
+        "Unread",
 
-    # -----------------------------
-    # PROVIDER PORTFOLIO
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS provider_portfolio(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        provider_id INTEGER,
-        file_name TEXT,
-        file_type TEXT
-    )
-    """)
+        current_datetime()
 
-    # -----------------------------
-    # CUSTOMERS
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS customers(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT UNIQUE,
-        password TEXT,
-        phone TEXT
-    )
-    """)
-
-    # -----------------------------
-    # WISHLIST
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS wishlist(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_id INTEGER,
-        provider_id INTEGER
-    )
-    """)
-
-    # -----------------------------
-    # NOTIFICATIONS
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS notifications(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_id INTEGER,
-        message TEXT,
-        notification_type TEXT,
-        status TEXT,
-        created_at TEXT
-    )
-    """)
-
-    # -----------------------------
-    # SUPPORT MESSAGES
-    # -----------------------------
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS support_messages(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_name TEXT,
-        customer_email TEXT,
-        sender TEXT,
-        message TEXT,
-        created_at TEXT,
-        status TEXT DEFAULT 'Open'
-    )
-    """)
+    ))
 
     conn.commit()
+
     conn.close()
 
 
-create_table()
+# ==========================================================
+# GET PROVIDER DETAILS
+# ==========================================================
 
-print("Database tables created successfully")
-# ======================================================
+def get_provider(provider_id):
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+
+        SELECT *
+
+        FROM providers
+
+        WHERE id=?
+
+    """, (provider_id,))
+
+    provider = cursor.fetchone()
+
+    conn.close()
+
+    return provider
+
+
+# ==========================================================
+# GET CUSTOMER DETAILS
+# ==========================================================
+
+def get_customer(customer_id):
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+
+        SELECT *
+
+        FROM customers
+
+        WHERE id=?
+
+    """, (customer_id,))
+
+    customer = cursor.fetchone()
+
+    conn.close()
+
+    return customer
+
+
+# ==========================================================
+# GET BOOKING DETAILS
+# ==========================================================
+
+def get_booking(booking_id):
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+
+        SELECT *
+
+        FROM bookings
+
+        WHERE id=?
+
+    """, (booking_id,))
+
+    booking = cursor.fetchone()
+
+    conn.close()
+
+    return booking
+
+
+print("=" * 60)
+print("PART 2 LOADED SUCCESSFULLY")
+print("=" * 60)
+
+# ==========================================================
+# PART 3
 # HOME PAGE
-# ======================================================
+# CONTACT
+# REVIEWS
+# STATIC PAGES
+# ==========================================================
+
+from datetime import datetime
+
+
+# ==========================================================
+# HOME PAGE
+# ==========================================================
 
 @app.route("/")
 def home():
 
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
     cursor = conn.cursor()
 
-    # Featured Providers
     cursor.execute("""
         SELECT *
         FROM providers
         WHERE status='Approved'
-        LIMIT 3
+        ORDER BY id DESC
+        LIMIT 6
     """)
+
     providers = cursor.fetchall()
 
-    # Latest Customer Reviews
     cursor.execute("""
-        SELECT name, rating, review
+        SELECT *
         FROM reviews
         ORDER BY id DESC
-        LIMIT 3
+        LIMIT 5
     """)
+
     reviews = cursor.fetchall()
 
     conn.close()
@@ -306,81 +563,34 @@ def home():
         providers=providers,
         reviews=reviews
     )
-@app.route("/provider-availability")
-def provider_availability():
-
-    if "provider" not in session:
-        return redirect("/provider-login")
-
-    provider_email = session["provider"]
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT available_date, status
-        FROM provider_availability
-        WHERE provider_email=?
-        ORDER BY available_date
-    """, (provider_email,))
-
-    availability = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "provider_availability.html",
-        availability=availability
-    )
-
-@app.route("/save-availability", methods=["POST"])
-def save_availability():
-
-    if "provider" not in session:
-        return redirect("/provider-login")
-
-    date = request.form["date"]
-    status = request.form["status"]
-
-    provider_email = session["provider"]
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    INSERT INTO provider_availability(
-        provider_email,
-        available_date,
-        status
-    )
-    VALUES(?,?,?)
-    """, (
-        provider_email,
-        date,
-        status
-    ))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/provider-availability")
 
 
-# ======================================================
-# BOOKING PAGE
-# ======================================================
+# ==========================================================
+# ABOUT PAGE
+# ==========================================================
 
-@app.route("/booking")
-def booking():
+@app.route("/about")
+def about():
 
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
+    return render_template("about.html")
+
+
+# ==========================================================
+# SERVICES PAGE
+# ==========================================================
+
+@app.route("/services")
+def services():
+
+    conn = get_db()
+
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
         FROM providers
         WHERE status='Approved'
+        ORDER BY service
     """)
 
     providers = cursor.fetchall()
@@ -388,282 +598,530 @@ def booking():
     conn.close()
 
     return render_template(
-        "booking.html",
+        "services.html",
         providers=providers
     )
 
-@app.route("/submit", methods=["POST"])
-def submit():
+
+# ==========================================================
+# CONTACT PAGE
+# ==========================================================
+
+@app.route("/contact")
+def contact():
+
+    return render_template("contact.html")
+
+
+# ==========================================================
+# CONTACT FORM
+# ==========================================================
+
+@app.route("/contact-submit", methods=["POST"])
+def contact_submit():
 
     name = request.form["name"]
     email = request.form["email"]
     phone = request.form["phone"]
-    date = request.form["date"]
-    service = request.form["service"]
-    provider_email = request.form["provider_email"]
-    amount = request.form["amount"]
-    coupon = request.form.get("coupon", "").strip().upper()
+    message = request.form["message"]
 
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
+
     cursor = conn.cursor()
 
-    # Check if the selected provider already has a booking on this date
     cursor.execute("""
-        SELECT COUNT(*)
-        FROM bookings
-        WHERE provider_email=? AND date=?
-    """, (provider_email, date))
-
-    provider_bookings = cursor.fetchone()[0]
-
-    if provider_bookings > 0:
-        conn.close()
-        return """
-        <h2 style='text-align:center;color:red;margin-top:80px;'>
-            Provider is already booked on this date.
-            <br><br>
-            Please select another provider or another date.
-        </h2>
-        """
-
-    # Check maximum bookings allowed for the date
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM bookings
-        WHERE date=?
-    """, (date,))
-
-    booking_count = cursor.fetchone()[0]
-
-    if booking_count >= 5:
-        conn.close()
-        return """
-        <h2 style='text-align:center;color:red;margin-top:80px;'>
-            Sorry!
-            <br><br>
-            This date is fully booked.
-            <br><br>
-            Please choose another date.
-        </h2>
-        """
-
-    # Save booking
-    cursor.execute("""
-        INSERT INTO bookings(
+        INSERT INTO contacts
+        (
             name,
             email,
             phone,
-            date,
-            service,
-            provider_email,
-            status
+            message
         )
-        VALUES(?,?,?,?,?,?,?)
+
+        VALUES
+        (
+            ?,?,?,?
+        )
     """, (
+
         name,
         email,
         phone,
-        date,
-        service,
-        provider_email,
-        "Pending"
+        message
+
     ))
 
     conn.commit()
     conn.close()
 
-    booking = {
-        "name": name,
-        "email": email,
-        "phone": phone,
-        "date": date,
-        "service": service,
-        "provider_email": provider_email
-    }
+    flash(
+        "Your message has been sent successfully.",
+        "success"
+    )
 
-    session["booking"] = booking
+    return redirect("/contact")
 
-    # Send email to provider
-    if provider_email:
 
-        provider_subject = "New Booking Assigned"
+# ==========================================================
+# REVIEW PAGE
+# ==========================================================
 
-        provider_body = f"""
-Hello,
+@app.route("/reviews")
+def reviews():
 
-A new booking has been assigned.
+    conn = get_db()
 
-Customer Name : {name}
-Customer Email : {email}
-Phone : {phone}
+    cursor = conn.cursor()
 
-Service : {service}
-Date : {date}
-"""
+    cursor.execute("""
+        SELECT *
+        FROM reviews
+        ORDER BY id DESC
+    """)
 
-        send_email(
-            provider_email,
-            provider_subject,
-            provider_body
+    reviews = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "reviews.html",
+        reviews=reviews
+    )
+
+
+# ==========================================================
+# SUBMIT REVIEW
+# ==========================================================
+
+@app.route("/submit-review", methods=["POST"])
+def submit_review():
+
+    name = request.form["name"]
+    rating = request.form["rating"]
+    review = request.form["review"]
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO reviews
+        (
+            name,
+            rating,
+            review,
+            review_date
         )
 
-    return redirect("/payment-success")
+        VALUES
+        (
+            ?,?,?,?
+        )
+    """, (
+
+        name,
+        rating,
+        review,
+        current_date()
+
+    ))
+
+    conn.commit()
+    conn.close()
+
+    flash(
+        "Thank you for your review!",
+        "success"
+    )
+
+    return redirect("/reviews")
 
 
-def contact():
-    return render_template("contact.html")
-@app.route("/review")
-def review():
 
-    return render_template("review.html")
-from datetime import datetime
+# ==========================================================
+# FAQ PAGE
+# ==========================================================
 
-# ==========================================
-# AI CHATBOT PAGE
-# ==========================================
+@app.route("/faq")
+def faq():
 
-@app.route("/chat")
-def chat():
-
-    return render_template("chatbot.html")
+    return render_template("faq.html")
 
 
-# ==========================================
-# AI CHATBOT API
-# ==========================================
+# ==========================================================
+# GALLERY PAGE
+# ==========================================================
 
-@app.route("/chatbot", methods=["POST"])
-def chatbot():
+@app.route("/gallery")
+def gallery():
 
-    data = request.get_json()
+    conn = get_db()
 
-    print("Received JSON:", data)
-
-    message = ""
-
-    if data:
-        message = data.get("message", "")
-
-    print("Message:", message)
-
-    message = message.strip().lower()
-
-    if message == "":
-        return jsonify({
-            "reply": "Please type a question."
-        })
-
-    if "hello" in message or "hi" in message:
-        reply = "Hello! Welcome to Event Booking Website."
-
-    elif "book" in message:
-        reply = "To book an event, click Booking and choose your provider."
-
-    elif "service" in message:
-        reply = "We provide Wedding, Birthday, Photography, Catering and Decoration."
-
-    elif "payment" in message:
-        reply = "Payment is securely processed."
-
-
-# -------------------------
-# Human Support
-# -------------------------
-
-    elif (
-    "support" in message
-    or "customer care" in message
-    or "human" in message
-    or "agent" in message
-    or "executive" in message
-    or "representative" in message
-    or "talk to support" in message
-    or "live chat" in message
-):
-
-     return jsonify({
-
-        "reply": "Sure! Connecting you to our Human Support Team...",
-
-        "redirect": "/customer-support"
-
-    })
-
-
-    else:
-     reply = "Sorry, I couldn't understand your question."
-
-    return jsonify({
-        "reply": reply
-    })
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
-
-
-@app.route("/payment")
-def payment():
-    return render_template("payment.html")
-
-
-@app.route("/payment-success")
-def payment_success():
-    return render_template("payment_success.html")
-
-
-# ======================================================
-# PROVIDER REGISTRATION PAGE
-# ======================================================
-
-@app.route("/provider-login", methods=["GET", "POST"])
-def provider_login():
-
-    if request.method == "GET":
-        return render_template("provider_login.html")
-
-    email = request.form["email"]
-    password = request.form["password"]
-
-    conn = sqlite3.connect("bookings.db")
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
         FROM providers
-        WHERE email=? AND password=?
-    """, (
-        email,
-        password
-    ))
+        WHERE image!=''
+        ORDER BY id DESC
+    """)
 
-    provider = cursor.fetchone()
-
-    
+    images = cursor.fetchall()
 
     conn.close()
 
-    if provider is None:
+    return render_template(
+        "gallery.html",
+        images=images
+    )
 
-        return "<h2>Invalid Email or Password</h2>"
 
-    if provider[9] != "Approved":
+# ==========================================================
+# ERROR HANDLER
+# ==========================================================
 
-        return "<h2>Your account is waiting for Admin Approval.</h2>"
+@app.errorhandler(404)
+def page_not_found(error):
 
-    session["provider"] = provider[0]
+    return render_template("404.html"), 404
 
-    return redirect("/provider-dashboard")
+
+print("=" * 60)
+print("PART 3 LOADED SUCCESSFULLY")
+print("=" * 60)
+
+# ==========================================================
+# PART 4
+# CUSTOMER MODULE
+# REGISTER
+# LOGIN
+# DASHBOARD
+# LOGOUT
+# PROFILE
+# ==========================================================
+
+
+# ==========================================================
+# CUSTOMER REGISTER
+# ==========================================================
+
+@app.route("/customer-register")
+def customer_register():
+
+    return render_template("customer_register.html")
+
+
+@app.route("/customer-submit", methods=["POST"])
+def customer_submit():
+
+    name = request.form["name"].strip()
+    email = request.form["email"].strip().lower()
+    password = request.form["password"]
+    phone = request.form["phone"]
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id FROM customers WHERE email=?",
+        (email,)
+    )
+
+    if cursor.fetchone():
+
+        conn.close()
+
+        flash(
+            "Email already registered.",
+            "danger"
+        )
+
+        return redirect("/customer-register")
+
+    cursor.execute("""
+        INSERT INTO customers
+        (
+            name,
+            email,
+            password,
+            phone
+        )
+
+        VALUES
+        (
+            ?,?,?,?
+        )
+    """, (
+
+        name,
+        email,
+        password,
+        phone
+
+    ))
+
+    conn.commit()
+    conn.close()
+
+    flash(
+        "Registration Successful. Please Login.",
+        "success"
+    )
+
+    return redirect("/customer-login")
+
+
+# ==========================================================
+# CUSTOMER LOGIN
+# ==========================================================
+
+@app.route("/customer-login", methods=["GET", "POST"])
+def customer_login():
+
+    if request.method == "GET":
+
+        return render_template(
+            "customer_login.html"
+        )
+
+    email = request.form["email"].strip().lower()
+    password = request.form["password"]
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM customers
+        WHERE email=?
+        AND password=?
+    """, (
+
+        email,
+        password
+
+    ))
+
+    customer = cursor.fetchone()
+
+    conn.close()
+
+    if customer:
+
+        session["customer_id"] = customer["id"]
+        session["customer_name"] = customer["name"]
+        session["customer_email"] = customer["email"]
+
+        flash(
+            "Welcome Back!",
+            "success"
+        )
+
+        return redirect("/customer-dashboard")
+
+    flash(
+        "Invalid Email or Password",
+        "danger"
+    )
+
+    return redirect("/customer-login")
+
+
+# ==========================================================
+# CUSTOMER DASHBOARD
+# ==========================================================
+
+@app.route("/customer-dashboard")
+def customer_dashboard():
+
+    if not customer_logged_in():
+
+        return redirect("/customer-login")
+
+    customer = get_customer(
+        session["customer_id"]
+    )
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM bookings
+        WHERE email=?
+        ORDER BY id DESC
+    """, (
+
+        customer["email"],
+
+    ))
+
+    bookings = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT *
+        FROM notifications
+        WHERE customer_id=?
+        ORDER BY id DESC
+    """, (
+
+        customer["id"],
+
+    ))
+
+    notifications = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+
+        "customer_dashboard.html",
+
+        customer=customer,
+
+        bookings=bookings,
+
+        notifications=notifications
+
+    )
+
+
+# ==========================================================
+# CUSTOMER PROFILE
+# ==========================================================
+
+@app.route("/customer-profile")
+def customer_profile():
+
+    if not customer_logged_in():
+
+        return redirect("/customer-login")
+
+    customer = get_customer(
+        session["customer_id"]
+    )
+
+    return render_template(
+
+        "customer_profile.html",
+
+        customer=customer
+
+    )
+
+
+# ==========================================================
+# UPDATE PROFILE
+# ==========================================================
+
+@app.route("/customer-update", methods=["POST"])
+def customer_update():
+
+    if not customer_logged_in():
+
+        return redirect("/customer-login")
+
+    name = request.form["name"]
+    phone = request.form["phone"]
+    password = request.form["password"]
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE customers
+
+        SET
+
+            name=?,
+
+            phone=?,
+
+            password=?
+
+        WHERE id=?
+    """, (
+
+        name,
+
+        phone,
+
+        password,
+
+        session["customer_id"]
+
+    ))
+
+    conn.commit()
+    conn.close()
+
+    session["customer_name"] = name
+
+    flash(
+        "Profile Updated Successfully.",
+        "success"
+    )
+
+    return redirect("/customer-profile")
+
+
+# ==========================================================
+# CUSTOMER LOGOUT
+# ==========================================================
+
+@app.route("/customer-logout")
+def customer_logout():
+
+    session.pop("customer_id", None)
+    session.pop("customer_name", None)
+    session.pop("customer_email", None)
+
+    flash(
+        "Logged Out Successfully.",
+        "info"
+    )
+
+    return redirect("/")
+
+
+print("=" * 60)
+print("PART 4 LOADED SUCCESSFULLY")
+print("=" * 60)
+
+
+# ==========================================================
+# PART 5
+# PROVIDER MODULE
+# REGISTER
+# LOGIN
+# DASHBOARD
+# PROFILE
+# LOGOUT
+# ==========================================================
+
+
+# ==========================================================
+# PROVIDER REGISTER PAGE
+# ==========================================================
 
 @app.route("/provider-register")
 def provider_register():
+
     return render_template("provider_register.html")
+
+
+# ==========================================================
+# PROVIDER REGISTER
+# ==========================================================
 
 @app.route("/provider-submit", methods=["POST"])
 def provider_submit():
 
     name = request.form["name"]
-    email = request.form["email"]
+    email = request.form["email"].strip().lower()
     password = request.form["password"]
     phone = request.form["phone"]
     service = request.form["service"]
@@ -676,23 +1134,30 @@ def provider_submit():
 
     image = request.files["image"]
 
-    filename = ""
+    filename = save_image(image)
 
-    if image and image.filename != "":
-        filename = secure_filename(image.filename)
-
-        image.save(
-            os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                filename
-            )
-        )
-
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
     cursor = conn.cursor()
 
+    cursor.execute(
+        "SELECT id FROM providers WHERE email=?",
+        (email,)
+    )
+
+    if cursor.fetchone():
+
+        conn.close()
+
+        flash(
+            "Email already registered.",
+            "danger"
+        )
+
+        return redirect("/provider-register")
+
     cursor.execute("""
-        INSERT INTO providers(
+        INSERT INTO providers
+        (
             name,
             email,
             password,
@@ -706,8 +1171,13 @@ def provider_submit():
             luxury_package,
             status
         )
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+
+        VALUES
+        (
+            ?,?,?,?,?,?,?,?,?,?,?,?
+        )
     """, (
+
         name,
         email,
         password,
@@ -720,224 +1190,687 @@ def provider_submit():
         premium_package,
         luxury_package,
         "Pending"
+
     ))
 
     conn.commit()
     conn.close()
 
-    subject = "Provider Registration Successful"
+    flash(
+        "Registration Successful. Waiting for Admin Approval.",
+        "success"
+    )
 
-    body = f"""
-Hello {name},
+    return redirect("/provider-login")
 
-Thank you for registering as a service provider.
 
-Your registration has been received successfully.
 
-Package Prices
+# ==========================================================
+# PROVIDER LOGIN
+# ==========================================================
 
-Basic Package : ₹{basic_package}
+@app.route("/provider-login", methods=["POST"])
+def provider_login_post():
 
-Premium Package : ₹{premium_package}
+    email = request.form["email"].strip().lower()
+    password = request.form["password"]
 
-Luxury Package : ₹{luxury_package}
-
-Current Status:
-Pending Approval
-
-The admin will review your profile soon.
-
-Thank you for joining Event Booking Website.
-"""
-
-    email_sent = send_email(email, subject, body)
-
-    if not email_sent:
-        print("Email could not be sent.")
-
-    return render_template("provider_success.html")
-
-@app.route("/save-provider/<int:id>")
-def save_provider(id):
-
-    if "customer_email" not in session:
-        flash("Please login first.")
-        return redirect("/customer-login")
-
-    customer_email = session["customer_email"]
-
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
-        FROM wishlist
-        WHERE customer_email=?
-        AND provider_id=?
-    """, (customer_email, id))
 
-    already_saved = cursor.fetchone()
+        FROM providers
 
-    if already_saved:
-        flash("Provider already saved.")
+        WHERE
+            email=?
+        AND
+            password=?
+        AND
+            status='Approved'
+    """, (
 
-    else:
-        cursor.execute("""
-            INSERT INTO wishlist
-            (customer_email, provider_id, saved_date)
-            VALUES(?,?,?)
-        """, (
-            customer_email,
-            id,
-            datetime.now().strftime("%d-%m-%Y")
-        ))
+        email,
+        password
 
-        conn.commit()
+    ))
 
-        flash("Provider saved successfully.")
+    provider = cursor.fetchone()
 
     conn.close()
 
-    return redirect(f"/provider/{id}")
+    if provider:
 
-@app.route("/remove-wishlist/<int:id>")
-def remove_wishlist(id):
+        session["provider_id"] = provider["id"]
+        session["provider_email"] = provider["email"]
+        session["provider_name"] = provider["name"]
 
-    conn=sqlite3.connect("bookings.db")
+        flash(
+            "Welcome Provider!",
+            "success"
+        )
 
-    cursor=conn.cursor()
+        return redirect("/provider-dashboard")
+
+    flash(
+        "Invalid Login or Approval Pending.",
+        "danger"
+    )
+
+    return redirect("/provider-login")
+
+
+# ==========================================================
+# PROVIDER DASHBOARD
+# ==========================================================
+
+@app.route("/provider-dashboard")
+def provider_dashboard():
+
+    if not provider_logged_in():
+
+        return redirect("/provider-login")
+
+    provider = get_provider(
+        session["provider_id"]
+    )
+
+    conn = get_db()
+    cursor = conn.cursor()
 
     cursor.execute("""
+        SELECT COUNT(*)
 
-    DELETE FROM wishlist
+        FROM bookings
 
-    WHERE provider_id=?
+        WHERE provider_email=?
+    """, (
 
-    AND customer_email=?
+        provider["email"],
 
-    """,(id,session["customer_email"]))
+    ))
 
-    conn.commit()
+    total_bookings = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+
+        FROM bookings
+
+        WHERE
+            provider_email=?
+        AND
+            status='Approved'
+    """, (
+
+        provider["email"],
+
+    ))
+
+    approved_bookings = cursor.fetchone()[0]
 
     conn.close()
 
-    flash("Removed successfully.")
+    return render_template(
 
-    return redirect("/wishlist")
+        "provider_dashboard.html",
 
-@app.route("/contact-submit", methods=["POST"])
-def contact_submit():
+        provider=provider,
+
+        total_bookings=total_bookings,
+
+        approved_bookings=approved_bookings
+
+    )
+
+
+# ==========================================================
+# PROVIDER PROFILE
+# ==========================================================
+
+@app.route("/provider-edit")
+def provider_edit():
+
+    if not provider_logged_in():
+
+        return redirect("/provider-login")
+
+    provider = get_provider(
+        session["provider_id"]
+    )
+
+    return render_template(
+
+        "provider_edit.html",
+
+        provider=provider
+
+    )
+
+
+# ==========================================================
+# UPDATE PROVIDER PROFILE
+# ==========================================================
+
+@app.route("/provider-update", methods=["POST"])
+def provider_update():
+
+    if not provider_logged_in():
+
+        return redirect("/provider-login")
+
+    provider_id = session["provider_id"]
+
+    name = request.form["name"]
+    phone = request.form["phone"]
+    service = request.form["service"]
+    experience = request.form["experience"]
+    description = request.form["description"]
+
+    image = request.files["image"]
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    if image and image.filename != "":
+
+        filename = save_image(image)
+
+        cursor.execute("""
+            UPDATE providers
+
+            SET
+
+                name=?,
+                phone=?,
+                service=?,
+                experience=?,
+                description=?,
+                image=?
+
+            WHERE id=?
+        """, (
+
+            name,
+            phone,
+            service,
+            experience,
+            description,
+            filename,
+            provider_id
+
+        ))
+
+    else:
+
+        cursor.execute("""
+            UPDATE providers
+
+            SET
+
+                name=?,
+                phone=?,
+                service=?,
+                experience=?,
+                description=?
+
+            WHERE id=?
+        """, (
+
+            name,
+            phone,
+            service,
+            experience,
+            description,
+            provider_id
+
+        ))
+
+    conn.commit()
+    conn.close()
+
+    session["provider_name"] = name
+
+    flash(
+        "Profile Updated Successfully.",
+        "success"
+    )
+
+    return redirect("/provider-dashboard")
+
+
+# ==========================================================
+# PROVIDER LOGOUT
+# ==========================================================
+
+@app.route("/provider-logout")
+def provider_logout():
+
+    session.pop("provider_id", None)
+    session.pop("provider_email", None)
+    session.pop("provider_name", None)
+
+    flash(
+        "Logged Out Successfully.",
+        "info"
+    )
+
+    return redirect("/")
+
+
+print("=" * 60)
+print("PART 5 LOADED SUCCESSFULLY")
+print("=" * 60)
+
+# ==========================================================
+# PART 6
+# BOOKING MODULE
+# ==========================================================
+
+# ==========================================================
+# BOOKING PAGE
+# ==========================================================
+
+@app.route("/booking")
+def booking():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM providers
+        WHERE status='Approved'
+        ORDER BY service,name
+    """)
+
+    providers = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "booking.html",
+        providers=providers
+    )
+
+
+# ==========================================================
+# PROVIDER DETAILS
+# ==========================================================
+
+@app.route("/provider/<int:provider_id>")
+def provider_profile(provider_id):
+
+    provider = get_provider(provider_id)
+
+    if provider is None:
+        return "Provider Not Found"
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM reviews
+        WHERE provider_email=?
+        ORDER BY id DESC
+    """, (provider["email"],))
+
+    reviews = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "provider_details.html",
+        provider=provider,
+        reviews=reviews
+    )
+
+
+# ==========================================================
+# AVAILABLE DATES
+# ==========================================================
+
+@app.route("/available-dates")
+def available_dates():
+
+    provider_email = request.args.get("provider_email")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT available_date
+        FROM provider_availability
+        WHERE
+            provider_email=?
+        AND
+            status='Available'
+        ORDER BY available_date
+    """, (provider_email,))
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    dates = []
+
+    for row in rows:
+        dates.append(row["available_date"])
+
+    return jsonify(dates)
+
+
+# ==========================================================
+# SUBMIT BOOKING
+# ==========================================================
+
+@app.route("/submit-booking", methods=["POST"])
+def submit_booking():
 
     name = request.form["name"]
     email = request.form["email"]
     phone = request.form["phone"]
-    message = request.form["message"]
+    date = request.form["date"]
+    service = request.form["service"]
+    provider_email = request.form["provider_email"]
 
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO contacts(
+        SELECT COUNT(*)
+        FROM bookings
+        WHERE
+            provider_email=?
+        AND
+            date=?
+        AND
+            status!='Cancelled'
+    """, (
+
+        provider_email,
+        date
+
+    ))
+
+    booked = cursor.fetchone()[0]
+
+    if booked > 0:
+
+        conn.close()
+
+        flash(
+            "Provider is already booked on this date.",
+            "danger"
+        )
+
+        return redirect("/booking")
+
+    cursor.execute("""
+        INSERT INTO bookings
+        (
             name,
             email,
             phone,
-            message
+            date,
+            service,
+            provider_email,
+            status
         )
-        VALUES(?,?,?,?)
+
+        VALUES
+        (
+            ?,?,?,?,?,?,?
+        )
     """, (
+
         name,
         email,
         phone,
-        message
+        date,
+        service,
+        provider_email,
+        "Pending"
+
     ))
 
     conn.commit()
+
     conn.close()
 
-    return "<h1>Message Sent Successfully</h1>"
-   
-   
-   
+    flash(
+        "Booking Submitted Successfully.",
+        "success"
+    )
 
-@app.route("/messages")
-def messages():
+    return redirect("/booking-history")
 
-    if "admin" not in session:
-        return redirect("/admin-login")
 
-    conn = sqlite3.connect("bookings.db")
+# ==========================================================
+# BOOKING HISTORY
+# ==========================================================
+
+@app.route("/booking-history")
+def booking_history():
+
+    if not customer_logged_in():
+
+        return redirect("/customer-login")
+
+    conn = get_db()
+
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM contacts")
-    messages = cursor.fetchall()
+    cursor.execute("""
+        SELECT *
+        FROM bookings
+        WHERE email=?
+        ORDER BY id DESC
+    """, (
+
+        session["customer_email"],
+
+    ))
+
+    bookings = cursor.fetchall()
 
     conn.close()
 
     return render_template(
-        "messages.html",
-        messages=messages
+        "booking_history.html",
+        bookings=bookings
     )
-@app.route("/providers")
-def providers():
 
-    search = request.args.get("search", "")
-    service = request.args.get("service", "")
 
-    conn = sqlite3.connect("bookings.db")
+# ==========================================================
+# TRACK BOOKING PAGE
+# ==========================================================
+
+@app.route("/track-booking")
+def track_booking():
+
+    return render_template(
+        "track_booking.html"
+    )
+
+
+# ==========================================================
+# TRACK BOOKING
+# ==========================================================
+
+@app.route("/track", methods=["POST"])
+def track():
+
+    email = request.form["email"]
+
+    conn = get_db()
+
     cursor = conn.cursor()
 
-    query = """
+    cursor.execute("""
+        SELECT *
+        FROM bookings
+        WHERE email=?
+        ORDER BY id DESC
+    """, (
+
+        email,
+
+    ))
+
+    bookings = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "booking_result.html",
+        bookings=bookings
+    )
+
+
+# ==========================================================
+# BOOKED DATES API
+# ==========================================================
+
+@app.route("/booked-dates")
+def booked_dates():
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT date
+        FROM bookings
+        WHERE status='Approved'
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    booked = []
+
+    for row in rows:
+
+        booked.append(
+            row["date"]
+        )
+
+    return jsonify(booked)
+
+
+print("=" * 60)
+print("PART 6 LOADED SUCCESSFULLY")
+print("=" * 60)
+
+# ==========================================================
+# PART 7
+# ADMIN MODULE
+# ==========================================================
+
+
+# ==========================================================
+# ADMIN LOGIN
+# ==========================================================
+
+@app.route("/admin-login", methods=["GET", "POST"])
+def admin_login():
+
+    if request.method == "GET":
+        return render_template("admin_login.html")
+
+    username = request.form["username"]
+    password = request.form["password"]
+
+    if username == "admin" and password == "admin123":
+
+        session["admin"] = True
+
+        flash(
+            "Welcome Admin",
+            "success"
+        )
+
+        return redirect("/admin-dashboard")
+
+    flash(
+        "Invalid Username or Password",
+        "danger"
+    )
+
+    return redirect("/admin-login")
+
+
+# ==========================================================
+# ADMIN DASHBOARD
+# ==========================================================
+
+@app.route("/admin-dashboard")
+def admin_dashboard():
+
+    if "admin" not in session:
+        return redirect("/admin-login")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) total FROM customers")
+    total_customers = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) total FROM providers")
+    total_providers = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) total FROM bookings")
+    total_bookings = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) total
+        FROM bookings
+        WHERE status='Approved'
+    """)
+    approved_bookings = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) total
+        FROM bookings
+        WHERE status='Pending'
+    """)
+    pending_bookings = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT *
+        FROM bookings
+        ORDER BY id DESC
+    """)
+    bookings = cursor.fetchall()
+
+    cursor.execute("""
         SELECT *
         FROM providers
-        WHERE status='Approved'
-    """
-
-    values = []
-
-    if search:
-        query += " AND name LIKE ?"
-        values.append("%" + search + "%")
-
-    if service:
-        query += " AND service=?"
-        values.append(service)
-
-    cursor.execute(query, values)
-
-    providers = cursor.fetchall()
-
-    print("--------------------------------")
-    for p in providers:
-        print(p)
-    print("--------------------------------")
-
-    conn.close()
-
-    return render_template(
-        "providers.html",
-        providers=providers,
-        search=search,
-        service=service
-    )
-@app.route("/admin-providers")
-def admin_providers():
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM providers")
-
+        ORDER BY id DESC
+    """)
     providers = cursor.fetchall()
 
     conn.close()
 
     return render_template(
-        "admin_providers.html",
+        "admin_dashboard.html",
+        total_customers=total_customers,
+        total_providers=total_providers,
+        total_bookings=total_bookings,
+        approved_bookings=approved_bookings,
+        pending_bookings=pending_bookings,
+        bookings=bookings,
         providers=providers
     )
+
+
+# ==========================================================
+# APPROVE PROVIDER
+# ==========================================================
 
 @app.route("/approve-provider/<int:id>")
 def approve_provider(id):
@@ -945,428 +1878,126 @@ def approve_provider(id):
     if "admin" not in session:
         return redirect("/admin-login")
 
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE providers
+        SET status='Approved'
+        WHERE id=?
+    """, (id,))
+
+    conn.commit()
+    conn.close()
+
+    flash(
+        "Provider Approved Successfully.",
+        "success"
+    )
+
+    return redirect("/admin-dashboard")
+
+
+# ==========================================================
+# DELETE PROVIDER
+# ==========================================================
+
+@app.route("/delete-provider/<int:id>")
+def delete_provider(id):
+
+    if "admin" not in session:
+        return redirect("/admin-login")
+
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute(
-        "UPDATE providers SET status='Approved' WHERE id=?",
+        "DELETE FROM providers WHERE id=?",
         (id,)
     )
 
     conn.commit()
     conn.close()
 
-    return redirect("/admin-providers")
-@app.route("/booking-details/<int:id>")
-def booking_details(id):
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT * FROM bookings WHERE id=?",
-        (id,)
+    flash(
+        "Provider Deleted.",
+        "info"
     )
 
-    booking = cursor.fetchone()
-
-    conn.close()
-
-    return render_template(
-        "booking_details.html",
-        booking=booking
-    )
+    return redirect("/admin-dashboard")
 
 
-@app.route("/admin-support")
-def admin_support():
+# ==========================================================
+# APPROVE BOOKING
+# ==========================================================
+
+@app.route("/approve-booking/<int:id>")
+def approve_booking(id):
 
     if "admin" not in session:
         return redirect("/admin-login")
 
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            customer_name,
-            customer_email,
-            status,
-            MAX(created_at) AS last_message
-        FROM support_messages
-        GROUP BY customer_email
-        ORDER BY last_message DESC
-    """)
-
-    customers = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "admin_support.html",
-        customers=customers
-    )
-
-
-@app.route("/admin-support-chat/<email>", methods=["GET", "POST"])
-def admin_support_chat(email):
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    # -----------------------------
-    # Save Admin Reply
-    # -----------------------------
-
-    if request.method == "POST":
-
-        reply = request.form["reply"]
-
-        cursor.execute("""
-            INSERT INTO support_messages
-            (
-                customer_name,
-                customer_email,
-                sender,
-                message,
-                created_at,
-                status
-            )
-
-            VALUES(?,?,?,?,?,?)
-
-        """, (
-
-            "",
-
-            email,
-
-            "Admin",
-
-            reply,
-
-            datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-
-            "Open"
-
-        ))
-
-        conn.commit()
-
-    # -----------------------------
-    # Fetch All Messages
-    # -----------------------------
-
-    cursor.execute("""
-
-        SELECT *
-
-        FROM support_messages
-
-        WHERE customer_email=?
-
-        ORDER BY id
-
-    """, (email,))
-
-    chats = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-
-        "admin_support_chat.html",
-
-        chats=chats,
-
-        email=email
-
-    )
-
-# ----------------------------
-# PROVIDER PROFILE
-# ----------------------------
-@app.route("/provider/<int:id>")
-def provider_profile(id):
-
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    # Get provider details
-    cursor.execute(
-        "SELECT * FROM providers WHERE id=?",
-        (id,)
-    )
-    provider = cursor.fetchone()
-    print(provider)
-
-    if not provider:
-        conn.close()
-        return "Provider not found"
-
-    # Get provider portfolio
-    cursor.execute("""
-        SELECT * FROM provider_portfolio
-        WHERE provider_id=?
-    """, (id,))
-
-    portfolio = cursor.fetchone()
-
-    images = []
-
-    if portfolio and portfolio["images"]:
-        images = portfolio["images"].split(",")
-
-    # Get provider reviews
-
-    conn.close()
-
-    return render_template(
-        "provider_details.html",
-        provider=provider,
-        images=images,
-        reviews=reviews
-    )
-
-
-@app.route("/admin-login")
-def admin_login():
-    return render_template("admin_login.html")
-
-
-@app.route("/admin-login", methods=["POST"])
-def admin_login_post():
-
-    username = request.form["username"]
-    password = request.form["password"]
-
-    # Change these credentials if needed
-    if username == "admin" and password == "admin123":
-        session["admin"] = True
-        return redirect("/admin")
-
-    flash("Invalid username or password")
-    return redirect("/admin-login")
-
-
-# ----------------------------
-# Admin Dashboard
-# ----------------------------
-@app.route("/admin")
-@app.route("/admin-dashboard")
-def admin():
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    search = request.args.get("search", "")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    # -----------------------------
-    # Search Bookings
-    # -----------------------------
-    if search:
-        cursor.execute(
-            "SELECT * FROM bookings WHERE name LIKE ?",
-            ('%' + search + '%',)
-        )
-    else:
-        cursor.execute("SELECT * FROM bookings")
-
-    bookings = cursor.fetchall()
-
-    # -----------------------------
-    # Booking Counts
-    # -----------------------------
-    cursor.execute("SELECT COUNT(*) FROM bookings")
-    total = cursor.fetchone()[0]
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM bookings WHERE status='Approved'"
-    )
-    approved = cursor.fetchone()[0]
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM bookings WHERE status='Pending'"
-    )
-    pending = cursor.fetchone()[0]
-
-    # -----------------------------
-    # Provider Counts
-    # -----------------------------
-    cursor.execute("SELECT COUNT(*) FROM providers")
-    total_providers = cursor.fetchone()[0]
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM providers WHERE status='Approved'"
-    )
-    approved_providers = cursor.fetchone()[0]
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM providers WHERE status='Pending'"
-    )
-    pending_providers = cursor.fetchone()[0]
-
-    # -----------------------------
-    # Contact Messages
-    # -----------------------------
-    cursor.execute("SELECT COUNT(*) FROM contacts")
-    total_messages = cursor.fetchone()[0]
-
-    # -----------------------------
-    # Open Support Requests
-    # -----------------------------
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM support_messages
-        WHERE status='Open'
-    """)
-
-    open_support_requests = cursor.fetchone()[0]
-
-    conn.close()
-
-    return render_template(
-        "admin.html",
-        bookings=bookings,
-        total=total,
-        approved=approved,
-        pending=pending,
-        total_providers=total_providers,
-        approved_providers=approved_providers,
-        pending_providers=pending_providers,
-        total_messages=total_messages,
-        open_support_requests=open_support_requests,
-        search=search
-    )
-@app.route("/admin-analytics")
-def admin_analytics():
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    # Monthly Bookings
-    cursor.execute("""
-        SELECT substr(date,4,2) AS month,
-               COUNT(*) AS total
-        FROM bookings
-        GROUP BY month
-        ORDER BY month
-    """)
-    monthly_bookings = cursor.fetchall()
-    print(monthly_bookings)
-
-    # Monthly Revenue
-    cursor.execute("""
-        SELECT substr(date,4,2) AS month,
-               COUNT(*) * 500 AS revenue
-        FROM bookings
-        WHERE payment_status='Paid'
-        GROUP BY month
-        ORDER BY month
-    """)
-    monthly_revenue = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "admin_analytics.html",
-        monthly_bookings=monthly_bookings,
-        monthly_revenue=monthly_revenue
-    )
-
-# ----------------------------
-# Edit Booking Page
-# ----------------------------
-@app.route("/edit/<int:id>")
-def edit(id):
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT * FROM bookings WHERE id=?",
-        (id,)
-    )
-
-    booking = cursor.fetchone()
-
-    conn.close()
-
-    return render_template(
-        "edit.html",
-        booking=booking
-    )
-
-
-# ----------------------------
-# Update Booking
-# ----------------------------
-@app.route("/update/<int:id>", methods=["POST"])
-def update(id):
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    name = request.form["name"]
-    email = request.form["email"]
-    phone = request.form["phone"]
-    date = request.form["date"]
-    service = request.form["service"]
-
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE bookings
-        SET
-            name=?,
-            email=?,
-            phone=?,
-            date=?,
-            service=?
+        SET status='Approved'
         WHERE id=?
-    """, (
-        name,
-        email,
-        phone,
-        date,
-        service,
-        id
-    ))
+    """, (id,))
 
     conn.commit()
     conn.close()
 
-    return redirect("/admin")
+    flash(
+        "Booking Approved.",
+        "success"
+    )
+
+    return redirect("/admin-dashboard")
 
 
+# ==========================================================
+# CANCEL BOOKING
+# ==========================================================
 
-# ----------------------------
-# Delete Booking
-# ----------------------------
-@app.route("/delete/<int:id>")
-def delete(id):
+@app.route("/cancel-booking/<int:id>")
+def cancel_booking(id):
 
     if "admin" not in session:
         return redirect("/admin-login")
 
-    conn = sqlite3.connect("bookings.db")
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE bookings
+        SET status='Cancelled'
+        WHERE id=?
+    """, (id,))
+
+    conn.commit()
+    conn.close()
+
+    flash(
+        "Booking Cancelled.",
+        "warning"
+    )
+
+    return redirect("/admin-dashboard")
+
+
+# ==========================================================
+# DELETE BOOKING
+# ==========================================================
+
+@app.route("/delete-booking/<int:id>")
+def delete_booking(id):
+
+    if "admin" not in session:
+        return redirect("/admin-login")
+
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute(
@@ -1377,1013 +2008,46 @@ def delete(id):
     conn.commit()
     conn.close()
 
-    return redirect("/admin")
-
-# ----------------------------
-# Export Bookings CSV
-# ----------------------------
-@app.route("/export")
-def export():
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM bookings")
-    bookings = cursor.fetchall()
-
-    conn.close()
-
-    def generate():
-
-        data = []
-
-        header = [
-            "ID",
-            "Name",
-            "Email",
-            "Phone",
-            "Date",
-            "Service",
-            "Status"
-        ]
-
-        data.append(",".join(header))
-
-        for row in bookings:
-            data.append(",".join(str(item) for item in row))
-
-        return "\n".join(data)
-
-    return Response(
-        generate(),
-        mimetype="text/csv",
-        headers={
-            "Content-Disposition":
-            "attachment; filename=bookings.csv"
-        }
-    )
-# ----------------------------
-# Approve Booking
-# ----------------------------
-@app.route("/approve/<int:id>")
-def approve(id):
-
-    if "admin" not in session:
-        return redirect("/admin-login")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    # Get booking details
-    cursor.execute(
-        "SELECT name, email, service, date FROM bookings WHERE id=?",
-        (id,)
+    flash(
+        "Booking Deleted.",
+        "danger"
     )
 
-    booking = cursor.fetchone()
-
-    if booking:
-
-        name = booking[0]
-        email = booking[1]
-        service = booking[2]
-        date = booking[3]
-
-        # Update booking status
-        cursor.execute(
-            "UPDATE bookings SET status='Approved' WHERE id=?",
-            (id,)
-        )
-
-        conn.commit()
-
-        subject = "Booking Approved"
-
-        body = f"""
-Hello {name},
-
-Congratulations!
-
-Your booking has been approved.
-
-Service: {service}
-
-Date: {date}
-
-Thank you for choosing Event Booking Website.
-"""
-
-        send_email(
-            email,
-            subject,
-            body
-        )
-
-    conn.close()
-
-    return redirect("/admin")
-    # -----------------------------
-    # Generate Invoice PDF
-    # -----------------------------
-    pdf_path = os.path.join("static", "invoice.pdf")
-    styles = getSampleStyleSheet()
-    doc = SimpleDocTemplate(pdf_path)
-    story = []
-    story.append( Paragraph("<b>EVENT BOOKING WEBSITE</b>", styles["Title"]) )
-    story.append( Paragraph(f"Customer : {booking['name']}", styles["Normal"]) )
-    story.append( Paragraph(f"Email : {booking['email']}", styles["Normal"]) )
-    story.append( Paragraph(f"Phone : {booking['phone']}", styles["Normal"]) )
-    story.append( Paragraph(f"Service : {booking['service']}", styles["Normal"]) )
-    story.append( Paragraph(f"Date : {booking['date']}", styles["Normal"]) )
-    story.append( Paragraph(f"Payment ID : {payment_id}", styles["Normal"]) )
-    story.append( Paragraph("Amount Paid : ₹500", styles["Normal"]) )
-    story.append( Paragraph("Payment Status : Paid", styles["Normal"]) )
-    doc.build(story)
-    # -----------------------------
-    # Send Email with Invoice
-    # -----------------------------
-    subject = "Booking Confirmation"
-    body = f""" Hello {booking['name']}, Your payment was successful. Your booking has been received successfully. Service : {booking['service']} Date : {booking['date']} Payment ID : {payment_id} Thank you for choosing Event Booking Website. """
-    send_email( booking["email"], subject, body, pdf_path )
-    session.pop("booking", None)
-    return redirect("/static/invoice.pdf")
-
-@app.route("/notifications")
-def notifications():
-
-    if "customer" not in session:
-        return redirect("/customer-login")
-
-    customer_id = session["customer"]
-
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM notifications
-        WHERE customer_id=?
-        ORDER BY id DESC
-    """, (customer_id,))
-
-    notifications = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "notifications.html",
-        notifications=notifications
-    )
-
-
-
-
-# ----------------------------
-# Run Application
-# ----------------------------
-@app.route("/booking-history", methods=["GET", "POST"])
-def booking_history():
-
-    bookings = []
-
-    if request.method == "POST":
-
-        email = request.form["email"]
-
-        conn = sqlite3.connect("bookings.db")
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "SELECT * FROM bookings WHERE email=?",
-            (email,)
-        )
-
-        bookings = cursor.fetchall()
-
-        conn.close()
-
-    return render_template(
-        "booking_history.html",
-        bookings=bookings
-    )
-
-@app.route("/submit-review", methods=["POST"])
-def submit_review():
-
-    booking_id = request.form["booking_id"]
-    provider_email = request.form["provider_email"]
-    customer_name = request.form["customer_name"]
-    rating = request.form["rating"]
-    review = request.form["review"]
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO reviews(
-            booking_id,
-            provider_email,
-            customer_name,
-            rating,
-            review
-        )
-        VALUES(?,?,?,?,?)
-    """,(
-        booking_id,
-        provider_email,
-        customer_name,
-        rating,
-        review
-    ))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/booking-history")
-
-# ===============================
-# CUSTOMER REGISTER
-# ===============================
-
-@app.route("/customer-register")
-def customer_register():
-    return render_template("customer_register.html")
-
-@app.route("/customer-submit", methods=["POST"])
-def customer_submit():
-
-    name = request.form["name"]
-    email = request.form["email"]
-    password = request.form["password"]
-    phone = request.form["phone"]
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO customers(name,email,password,phone)
-        VALUES(?,?,?,?)
-    """, (
-        name,
-        email,
-        password,
-        phone
-    ))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/customer-login")
-
-# ==========================================
-# CUSTOMER LOGIN
-# ==========================================
-
-@app.route("/customer-login", methods=["GET", "POST"])
-def customer_login():
-
-    if request.method == "GET":
-        return render_template("customer_login.html")
-
-    email = request.form["email"]
-    password = request.form["password"]
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM customers
-        WHERE email=? AND password=?
-    """, (email, password))
-
-    customer = cursor.fetchone()
-
-    conn.close()
-
-    if customer:
-        session["customer"] = customer[0]
-        return redirect("/customer-dashboard")
-
-    return "<h2>Invalid Email or Password</h2>"
-
-@app.route("/customer-dashboard")
-def customer_dashboard():
-
-    if "customer" not in session:
-        return redirect("/customer-login")
-
-    customer_id = session["customer"]
-
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    # -------------------------
-    # Customer Details
-    # -------------------------
-    cursor.execute("""
-        SELECT *
-        FROM customers
-        WHERE id=?
-    """, (customer_id,))
-
-    customer = cursor.fetchone()
-
-    if customer is None:
-        conn.close()
-        session.clear()
-        return redirect("/customer-login")
-
-    # -------------------------
-    # Wishlist
-    # -------------------------
-    cursor.execute("""
-        SELECT providers.*
-        FROM wishlist
-        INNER JOIN providers
-        ON wishlist.provider_id = providers.id
-        WHERE wishlist.customer_id=?
-    """, (customer_id,))
-
-    wishlist = cursor.fetchall()
-
-    # -------------------------
-    # Notifications
-    # -------------------------
-    cursor.execute("""
-        SELECT *
-        FROM notifications
-        WHERE customer_id=?
-        ORDER BY id DESC
-    """, (customer_id,))
-
-    notifications = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "customer_dashboard.html",
-        customer=customer,
-        wishlist=wishlist,
-        notifications=notifications
-    )
-
-
-@app.route("/customer-logout")
-def customer_logout():
-
-    # Remove customer session
-    session.pop("customer", None)
-
-    # Redirect to home page
-    return redirect("/")
-
-
-
-@app.route("/customer-support")
-def customer_support():
-
-    if "customer" not in session:
-        return redirect("/customer-login")
-
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    # Get logged-in customer
-    cursor.execute("""
-        SELECT *
-        FROM customers
-        WHERE id=?
-    """, (session["customer"],))
-
-    customer = cursor.fetchone()
-
-    conn.close()
-
-    return redirect("/support-chat/" + customer["email"])
-# ======================================
-# INVOICE ROUTE
-# ======================================
-
-@app.route("/invoice/<int:id>")
-def invoice(id):
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT * FROM bookings WHERE id=?",
-        (id,)
-    )
-
-    booking = cursor.fetchone()
-
-    conn.close()
-
-    if booking is None:
-        return "Booking Not Found"
-
-    return render_template(
-        "invoice.html",
-        booking=booking
-    )
-
-
-
-
-
-# ----------------------------
-# Track Booking Page
-# ----------------------------
-
-@app.route("/track-booking")
-def track_booking():
-    return render_template("track_booking.html")
-
-
-# ----------------------------
-# Search Booking
-# ----------------------------
-
-@app.route("/track", methods=["POST"])
-def track():
-
-    email = request.form["email"]
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT * FROM bookings WHERE email=?",
-        (email,)
-    )
-
-    bookings = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "booking_result.html",
-        bookings=bookings
-    )
-@app.route("/reviews")
-def reviews():
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT name, rating, review, review_date
-        FROM reviews
-        ORDER BY id DESC
-    """)
-
-    reviews = cursor.fetchall()
-
-    conn.close()
-    return render_template(
-        "reviews.html",
-        reviews=reviews
-    )
-@app.route("/check-date")
-def check_date():
-
-    # Get date selected by customer
-    date = request.args.get("date")
-
-    # Get selected provider
-    provider_email = request.args.get("provider_email")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT status
-        FROM provider_availability
-        WHERE provider_email=?
-        AND available_date=?
-    """, (
-        provider_email,
-        date
-    ))
-
-    result = cursor.fetchone()
-
-    conn.close()
-
-    if result and result[0] == "Available":
-        return {"available": True}
-
-    return {"available": False}
-
-@app.route("/available-dates")
-def available_dates():
-
-    provider_email = request.args.get("provider_email")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT available_date
-        FROM provider_availability
-        WHERE provider_email=?
-        AND status='Available'
-    """, (provider_email,))
-
-    dates = cursor.fetchall()
-
-    conn.close()
-
-    available = []
-
-    for d in dates:
-        available.append(d[0])
-
-    return jsonify(available)
-
-
-@app.route("/provider-login", methods=["POST"])
-def provider_login_post():
-
-    email = request.form["email"]
-    password = request.form["password"]
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM providers
-        WHERE email=?
-        AND password=?
-        AND status='Approved'
-    """, (email, password))
-
-    provider = cursor.fetchone()
-
-    conn.close()
-
-    if provider:
-
-        session["provider"] = provider[0]
-
-        return redirect("/provider-dashboard")
-
-    return "<h2>Invalid Login or Approval Pending</h2>"
-
-@app.route("/delete-provider/<int:provider_id>")
-def delete_provider(provider_id):
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM providers WHERE id=?", (provider_id,))
-    conn.commit()
-    conn.close()
-
-    flash("Provider deleted successfully!", "success")
     return redirect("/admin-dashboard")
 
 
-@app.route("/provider-dashboard")
-def provider_dashboard():
+# ==========================================================
+# ADMIN LOGOUT
+# ==========================================================
 
-    if "provider" not in session:
-        return redirect("/provider-login")
+@app.route("/admin-logout")
+def admin_logout():
 
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    session.pop("admin", None)
 
-    # Logged in provider
-    cursor.execute("""
-        SELECT *
-        FROM providers
-        WHERE id=?
-    """, (session["provider"],))
-
-    provider = cursor.fetchone()
-
-    provider_email = provider["email"]
-
-    # -----------------------------
-    # Total Bookings
-    # -----------------------------
-
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM bookings
-        WHERE provider_email=?
-        AND status='Approved'
-    """, (provider_email,))
-
-    total_bookings = cursor.fetchone()[0]
-
-    # -----------------------------
-    # Total Earnings
-    # -----------------------------
-
-    cursor.execute("""
-        SELECT IFNULL(SUM(amount),0)
-        FROM bookings
-        WHERE provider_email=?
-        AND status='Approved'
-    """, (provider_email,))
-
-    total_earnings = cursor.fetchone()[0]
-
-    # -----------------------------
-    # Current Month Earnings
-    # -----------------------------
-
-    current_month = datetime.now().strftime("%Y-%m")
-
-    cursor.execute("""
-        SELECT IFNULL(SUM(amount),0)
-        FROM bookings
-        WHERE provider_email=?
-        AND status='Approved'
-        AND date LIKE ?
-    """, (
-        provider_email,
-        current_month + "%"
-    ))
-
-    month_earnings = cursor.fetchone()[0]
-
-    conn.close()
-
-    return render_template(
-        "provider_dashboard.html",
-        provider=provider,
-        total_bookings=total_bookings,
-        total_earnings=total_earnings,
-        month_earnings=month_earnings
-    )
-from datetime import datetime
-
-@app.route("/provider-bookings")
-def provider_bookings():
-
-    if "provider" not in session:
-        return redirect("/provider-login")
-
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    # -----------------------------
-    # Logged-in Provider
-    # -----------------------------
-    cursor.execute("""
-        SELECT *
-        FROM providers
-        WHERE id=?
-    """, (session["provider"],))
-
-    provider = cursor.fetchone()
-
-    provider_email = provider["email"]
-
-    # -----------------------------
-    # Provider Bookings
-    # -----------------------------
-    cursor.execute("""
-        SELECT *
-        FROM bookings
-        WHERE provider_email=?
-        ORDER BY date DESC
-    """, (provider_email,))
-
-    bookings = cursor.fetchall()
-
-    # -----------------------------
-    # Total Bookings
-    # -----------------------------
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM bookings
-        WHERE provider_email=?
-        AND status='Approved'
-    """, (provider_email,))
-
-    total_bookings = cursor.fetchone()[0]
-
-    # -----------------------------
-    # Total Earnings
-    # -----------------------------
-    cursor.execute("""
-        SELECT IFNULL(SUM(amount),0)
-        FROM bookings
-        WHERE provider_email=?
-        AND status='Approved'
-    """, (provider_email,))
-
-    total_earnings = cursor.fetchone()[0]
-
-    # -----------------------------
-    # Current Month Earnings
-    # -----------------------------
-    current_month = datetime.now().strftime("%m")
-
-    cursor.execute("""
-        SELECT IFNULL(SUM(amount),0)
-        FROM bookings
-        WHERE provider_email=?
-        AND status='Approved'
-        AND substr(date,4,2)=?
-    """, (provider_email, current_month))
-
-    month_earnings = cursor.fetchone()[0]
-
-    conn.close()
-
-    return render_template(
-        "provider_bookings.html",
-        provider=provider,
-        bookings=bookings,
-        total_bookings=total_bookings,
-        total_earnings=total_earnings,
-        month_earnings=month_earnings
+    flash(
+        "Logged Out Successfully.",
+        "info"
     )
 
-@app.route("/login", methods=["POST"])
-def login():
-
-    username = request.form["username"]
-    password = request.form["password"]
-
-    if username == "admin" and password == "admin123":
-        session["admin"] = True
-        return redirect("/admin")
-
-    return "Invalid Login"
+    return redirect("/")
 
 
-@app.route("/logout")
-def logout():
+print("=" * 60)
+print("PART 7 LOADED SUCCESSFULLY")
+print("=" * 60)
 
-    session.clear()
-
-    return redirect("/customer-login")
-
-@app.route("/provider-edit")
-def provider_edit():
-
-    if "provider" not in session:
-        return redirect("/provider-login")
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute(
-    "SELECT * FROM providers WHERE id=?",
-    (session["provider"],)
-)
-    provider = cursor.fetchone()
-
-    conn.close()
-
-    return render_template(
-        "provider_edit.html",
-        provider=provider
-    )
-@app.route("/provider-update", methods=["POST"])
-def provider_update():
-
-    if "provider" not in session:
-        return redirect("/provider-login")
-
-    id = request.form["id"]
-    name = request.form["name"]
-    phone = request.form["phone"]
-    service = request.form["service"]
-    experience = request.form["experience"]
-    description = request.form["description"]
-
-    image = request.files["image"]
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    if image.filename != "":
-
-        filename = secure_filename(image.filename)
-
-        image.save(
-            os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                filename
-            )
-        )
-
-        cursor.execute("""
-        UPDATE providers
-        SET
-            name=?,
-            phone=?,
-            service=?,
-            experience=?,
-            description=?,
-            image=?
-        WHERE id=?
-        """,
-        (
-            name,
-            phone,
-            service,
-            experience,
-            description,
-            filename,
-            id
-        ))
-
-    else:
-
-        cursor.execute("""
-        UPDATE providers
-        SET
-            name=?,
-            phone=?,
-            service=?,
-            experience=?,
-            description=?
-        WHERE id=?
-        """,
-        (
-            name,
-            phone,
-            service,
-            experience,
-            description,
-            id
-        ))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/provider-dashboard")
-
-@app.route("/booked-dates")
-def booked_dates():
-
-    conn = sqlite3.connect("bookings.db")
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT date
-        FROM bookings
-        WHERE status='Approved'
-    """)
-
-    dates = cursor.fetchall()
-
-    conn.close()
-
-    booked = []
-
-    for d in dates:
-        booked.append(d[0])
-
-    return jsonify(booked)
-
-@app.route("/provider-logout")
-def provider_logout():
-
-    session.pop("provider", None)
-
-    return redirect("/provider-login")
+# ==========================================================
+# PART 8
+# AI FEATURES + SUPPORT + FINAL
+# ==========================================================
 
 from datetime import datetime
 
-@app.route("/support", methods=["GET", "POST"])
-def support():
 
-    if request.method == "POST":
-
-        name = request.form["name"]
-
-        email = request.form["email"]
-
-        message = request.form["message"]
-
-        conn = sqlite3.connect("bookings.db")
-
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            INSERT INTO support_messages
-            (
-                customer_name,
-                customer_email,
-                sender,
-                message,
-                created_at
-            )
-
-            VALUES(?,?,?,?,?)
-
-        """, (
-
-            name,
-
-            email,
-
-            "Customer",
-
-            message,
-
-            datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-
-        ))
-
-        conn.commit()
-
-        conn.close()
-
-    return redirect("/support-chat/" + email)
-    return render_template("support_chat.html")
-
-
-@app.route("/support-chat/<email>", methods=["GET", "POST"])
-def support_chat(email):
-
-    conn = sqlite3.connect("bookings.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    # -----------------------------
-    # Customer Sends New Message
-    # -----------------------------
-    if request.method == "POST":
-
-        message = request.form["message"]
-
-        cursor.execute("""
-            INSERT INTO support_messages
-            (
-                customer_name,
-                customer_email,
-                sender,
-                message,
-                created_at,
-                status
-            )
-
-            VALUES(?,?,?,?,?,?)
-        """, (
-
-            "",
-
-            email,
-
-            "Customer",
-
-            message,
-
-            datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-
-            "Open"
-
-        ))
-
-        conn.commit()
-
-    # -----------------------------
-    # Load Complete Conversation
-    # -----------------------------
-
-    cursor.execute("""
-
-        SELECT *
-
-        FROM support_messages
-
-        WHERE customer_email=?
-
-        ORDER BY id
-
-    """, (email,))
-
-    chats = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "support_chat_page.html",
-        chats=chats,
-        email=email
-    )
-
-# =====================================================
+# ==========================================================
 # AI EVENT PLANNER
-# =====================================================
+# ==========================================================
 
 @app.route("/event-planner", methods=["GET", "POST"])
 def event_planner():
@@ -2392,207 +2056,83 @@ def event_planner():
 
     if request.method == "POST":
 
-        # -----------------------------
-        # Get Form Data
-        # -----------------------------
-
-        event = request.form.get("event")
-
-        guests = int(request.form.get("guests"))
-
-        budget = int(request.form.get("budget"))
-
-        suggestions = []
-
-        # -----------------------------
-        # AI Service Suggestions
-        # -----------------------------
+        event = request.form["event"]
+        guests = int(request.form["guests"])
+        budget = int(request.form["budget"])
 
         if event == "Wedding":
 
-            suggestions = [
-
-                "💒 Premium Venue Decoration",
-                "📸 Professional Photography",
-                "🎥 Cinematic Videography",
-                "🎵 DJ & Live Music",
-                "🍽 Premium Catering",
-                "💄 Bridal Makeup",
-                "🌸 Flower Decoration",
-                "🎂 Luxury Wedding Cake"
-
+            services = [
+                "Premium Decoration",
+                "Photography",
+                "Videography",
+                "Luxury Catering",
+                "Live Music"
             ]
+
+            venue = "Luxury Wedding Hall"
 
         elif event == "Birthday":
 
-            suggestions = [
-
-                "🎈 Balloon Decoration",
-                "🎂 Customized Birthday Cake",
-                "📸 Photography",
-                "🎵 DJ",
-                "🍕 Food Catering",
-                "🎁 Return Gifts",
-                "🎨 Theme Decoration"
-
+            services = [
+                "Balloon Decoration",
+                "Birthday Cake",
+                "DJ",
+                "Photography"
             ]
+
+            venue = "Party Hall"
 
         elif event == "Corporate":
 
-            suggestions = [
-
-                "🎤 Stage Setup",
-                "🎧 Sound System",
-                "📽 LED Screen",
-                "🍽 Corporate Catering",
-                "📸 Event Photography",
-                "🪑 Conference Seating",
-                "🎁 Welcome Kit"
-
+            services = [
+                "Conference Hall",
+                "Projector",
+                "Sound System",
+                "Corporate Catering"
             ]
 
-        elif event == "Engagement":
-
-            suggestions = [
-
-                "💍 Ring Ceremony Stage",
-                "📸 Photography",
-                "🎵 Music System",
-                "🌸 Flower Decoration",
-                "🍽 Catering"
-
-            ]
-
-        elif event == "Reception":
-
-            suggestions = [
-
-                "✨ Luxury Decoration",
-                "🎥 Videography",
-                "🎵 Live Orchestra",
-                "🍽 Catering",
-                "📸 Photography"
-
-            ]
-
-        # -----------------------------
-        # Package Recommendation
-        # -----------------------------
-
-        if budget < 50000:
-
-            package = "⭐ Basic Package"
-
-        elif budget < 150000:
-
-            package = "⭐⭐ Premium Package"
+            venue = "Business Convention Center"
 
         else:
 
-            package = "⭐⭐⭐ Luxury Package"
+            services = [
+                "Decoration",
+                "Photography",
+                "Food"
+            ]
 
-        # -----------------------------
-        # Venue Recommendation
-        # -----------------------------
-
-        if guests <= 100:
-
-            venue = "Small Banquet Hall"
-
-        elif guests <= 300:
-
-            venue = "Medium Convention Hall"
-
-        else:
-
-            venue = "Large Convention Centre"
-
-        # -----------------------------
-        # Estimated Cost
-        # -----------------------------
+            venue = "Community Hall"
 
         estimated_cost = guests * 1200
 
-        if event == "Wedding":
-
-            estimated_cost += 150000
-
-        elif event == "Birthday":
-
-            estimated_cost += 40000
-
-        elif event == "Corporate":
-
-            estimated_cost += 80000
-
-        elif event == "Engagement":
-
-            estimated_cost += 60000
-
-        elif event == "Reception":
-
-            estimated_cost += 100000
-
-        # -----------------------------
-        # Cost Per Guest
-        # -----------------------------
-
-        per_guest = estimated_cost // guests
-
-        # -----------------------------
-        # Planning Duration
-        # -----------------------------
-
-        if guests <= 100:
-
-            planning_days = "10 - 15 Days"
-
-        elif guests <= 300:
-
-            planning_days = "20 - 30 Days"
-
+        if budget >= estimated_cost:
+            package = "Premium Package"
         else:
-
-            planning_days = "45 - 60 Days"
-
-        # -----------------------------
-        # AI Confidence
-        # -----------------------------
-
-        confidence = 98
-
-        # -----------------------------
-        # AI Recommendation
-        # -----------------------------
+            package = "Budget Package"
 
         suggestion = {
 
             "event": event,
-
             "guests": guests,
-
             "budget": budget,
-
-            "package": package,
-
             "venue": venue,
-
-            "services": suggestions,
-
+            "services": services,
             "estimated_cost": estimated_cost,
-
-            "per_guest": per_guest,
-
-            "planning_days": planning_days,
-
-            "confidence": confidence
+            "package": package,
+            "planning_days": max(7, guests // 10)
 
         }
 
+    return render_template(
+        "event_planner.html",
+        suggestion=suggestion
+    )
 
-# =====================================================
+
+# ==========================================================
 # AI BUDGET ESTIMATOR
-# =====================================================
+# ==========================================================
 
 @app.route("/budget-estimator", methods=["GET", "POST"])
 def budget_estimator():
@@ -2601,21 +2141,15 @@ def budget_estimator():
 
     if request.method == "POST":
 
-        event = request.form.get("event")
-
-        guests = int(request.form.get("guests"))
-
-        budget = int(request.form.get("budget"))
-
-        # ------------------------
-        # Estimated Costs
-        # ------------------------
+        event = request.form["event"]
+        guests = int(request.form["guests"])
+        budget = int(request.form["budget"])
 
         decoration = guests * 150
         catering = guests * 500
         photography = 25000
         entertainment = 15000
-        miscellaneous = 10000
+        venue = 50000
 
         if event == "Wedding":
             venue = 100000
@@ -2624,50 +2158,32 @@ def budget_estimator():
             venue = 30000
 
         elif event == "Corporate":
-            venue = 60000
-
-        elif event == "Reception":
             venue = 70000
-
-        else:
-            venue = 50000
 
         total = (
             decoration +
             catering +
             photography +
             entertainment +
-            miscellaneous +
             venue
         )
 
         if total <= budget:
-            status = "✅ Your budget is sufficient."
+            status = "Budget is sufficient"
         else:
-            status = "⚠ Your budget is lower than the estimated cost."
+            status = "Budget is insufficient"
 
         result = {
 
             "event": event,
-
             "guests": guests,
-
             "budget": budget,
-
             "decoration": decoration,
-
             "catering": catering,
-
             "photography": photography,
-
             "entertainment": entertainment,
-
-            "miscellaneous": miscellaneous,
-
             "venue": venue,
-
             "total": total,
-
             "status": status
 
         }
@@ -2678,22 +2194,153 @@ def budget_estimator():
     )
 
 
+# ==========================================================
+# AI CHATBOT PAGE
+# ==========================================================
+
+@app.route("/chat")
+def chat():
+
+    return render_template("chatbot.html")
+
+
+# ==========================================================
+# CHATBOT API
+# ==========================================================
+
+@app.route("/chatbot", methods=["POST"])
+def chatbot():
+
+    data = request.get_json()
+
+    message = data.get(
+        "message",
+        ""
+    ).lower()
+
+    if "hello" in message:
+
+        reply = "Hello! Welcome to Event Booking."
+
+    elif "booking" in message:
+
+        reply = "Click Booking to reserve your event."
+
+    elif "payment" in message:
+
+        reply = "Payments are processed securely."
+
+    elif "support" in message:
+
+        reply = "Visit the Support page for assistance."
+
+    elif "services" in message:
+
+        reply = (
+            "Wedding, Birthday, Catering, "
+            "Photography, Decoration and Corporate Events."
+        )
+
+    else:
+
+        reply = (
+            "Sorry, I couldn't understand."
+        )
+
+    return jsonify({
+        "reply": reply
+    })
+
+
+# ==========================================================
+# CUSTOMER SUPPORT
+# ==========================================================
+
+@app.route("/support", methods=["GET", "POST"])
+def support():
+
+    if request.method == "POST":
+
+        name = request.form["name"]
+        email = request.form["email"]
+        message = request.form["message"]
+
+        conn = get_db()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            INSERT INTO support_messages
+
+            (
+                customer_name,
+                customer_email,
+                sender,
+                message,
+                created_at,
+                status
+            )
+
+            VALUES
+            (
+                ?,?,?,?,?,?
+            )
+
+        """, (
+
+            name,
+            email,
+            "Customer",
+            message,
+            current_datetime(),
+            "Open"
+
+        ))
+
+        conn.commit()
+        conn.close()
+
+        flash(
+            "Support request submitted.",
+            "success"
+        )
+
+        return redirect("/")
 
     return render_template(
-
-        "event_planner.html",
-
-        suggestion=suggestion
-
+        "support.html"
     )
 
+# ==========================================================
+# HEALTH CHECK
+# ==========================================================
+
+@app.route("/health")
+def health():
+
+    return jsonify({
+
+        "status": "running",
+
+        "application": "Event Booking Website",
+
+        "version": "2.0"
+
+    })
 
 
-
+# ==========================================================
+# RUN APPLICATION
+# ==========================================================
 
 if __name__ == "__main__":
+
     app.run(
+
         host="127.0.0.1",
+
         port=5000,
+
         debug=True
+
     )
