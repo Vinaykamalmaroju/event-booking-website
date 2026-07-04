@@ -1103,16 +1103,13 @@ print("=" * 60)
 
 
 # ==========================================================
-# PART 5
-# PROVIDER MODULE
-# REGISTER
-# LOGIN
-# DASHBOARD
-# PROFILE
-# LOGOUT
+# PROVIDER REGISTER PAGE
 # ==========================================================
 
+@app.route("/provider-register")
+def provider_register():
 
+    return render_template("provider_register.html")
 # ==========================================================
 # PROVIDER REGISTER
 # ==========================================================
