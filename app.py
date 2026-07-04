@@ -800,15 +800,7 @@ print("=" * 60)
 print("PART 3 LOADED SUCCESSFULLY")
 print("=" * 60)
 
-# ==========================================================
-# PART 4
-# CUSTOMER MODULE
-# REGISTER
-# LOGIN
-# DASHBOARD
-# LOGOUT
-# PROFILE
-# ==========================================================
+
 
 
 # ==========================================================
@@ -878,6 +870,15 @@ def customer_submit():
         "success"
     )
 
+    return redirect("/customer-login")
+
+
+# ==========================================================
+# LOGIN REDIRECT
+# ==========================================================
+
+@app.route("/login")
+def login():
     return redirect("/customer-login")
 
 
@@ -1922,6 +1923,7 @@ print("=" * 60)
 # ==========================================================
 
 
+
 # ==========================================================
 # ADMIN LOGIN
 # ==========================================================
@@ -1932,15 +1934,15 @@ def admin_login():
     if request.method == "GET":
         return render_template("admin_login.html")
 
-    username = request.form["username"]
-    password = request.form["password"]
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "").strip()
 
     if username == "admin" and password == "admin123":
 
         session["admin"] = True
 
         flash(
-            "Welcome Admin",
+            "Welcome Admin!",
             "success"
         )
 
@@ -1961,48 +1963,79 @@ def admin_login():
 @app.route("/admin-dashboard")
 def admin_dashboard():
 
-    if "admin" not in session:
+    if not admin_logged_in():
+        flash("Please login as Admin.", "danger")
         return redirect("/admin-login")
 
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COUNT(*) total FROM customers")
+    # ----------------------------
+    # Total Customers
+    # ----------------------------
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM customers
+    """)
     total_customers = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) total FROM providers")
+    # ----------------------------
+    # Total Providers
+    # ----------------------------
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM providers
+    """)
     total_providers = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) total FROM bookings")
+    # ----------------------------
+    # Total Bookings
+    # ----------------------------
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM bookings
+    """)
     total_bookings = cursor.fetchone()["total"]
 
+    # ----------------------------
+    # Approved Bookings
+    # ----------------------------
     cursor.execute("""
-        SELECT COUNT(*) total
+        SELECT COUNT(*) AS total
         FROM bookings
         WHERE status='Approved'
     """)
     approved_bookings = cursor.fetchone()["total"]
 
+    # ----------------------------
+    # Pending Bookings
+    # ----------------------------
     cursor.execute("""
-        SELECT COUNT(*) total
+        SELECT COUNT(*) AS total
         FROM bookings
         WHERE status='Pending'
     """)
     pending_bookings = cursor.fetchone()["total"]
 
-    cursor.execute("""
-        SELECT *
-        FROM bookings
-        ORDER BY id DESC
-    """)
-    bookings = cursor.fetchall()
-
+    # ----------------------------
+    # Latest Providers
+    # ----------------------------
     cursor.execute("""
         SELECT *
         FROM providers
         ORDER BY id DESC
     """)
     providers = cursor.fetchall()
+
+    # ----------------------------
+    # Latest Bookings
+    # ----------------------------
+    cursor.execute("""
+        SELECT *
+        FROM bookings
+        ORDER BY id DESC
+    """)
+    bookings = cursor.fetchall()
 
     conn.close()
 
@@ -2013,8 +2046,8 @@ def admin_dashboard():
         total_bookings=total_bookings,
         approved_bookings=approved_bookings,
         pending_bookings=pending_bookings,
-        bookings=bookings,
-        providers=providers
+        providers=providers,
+        bookings=bookings
     )
 
 
@@ -2076,6 +2109,27 @@ def delete_provider(id):
 
     return redirect("/admin-dashboard")
 
+
+@app.route("/reject-provider/<int:id>")
+def reject_provider(id):
+
+    if not admin_logged_in():
+        return redirect("/admin-login")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM providers
+        WHERE id=?
+    """, (id,))
+
+    conn.commit()
+    conn.close()
+
+    flash("Provider Rejected.", "danger")
+
+    return redirect("/admin-dashboard")
 
 # ==========================================================
 # APPROVE BOOKING
