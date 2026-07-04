@@ -48,11 +48,14 @@ app.secret_key = "eventbooking123"
 # UPLOAD FOLDER
 # ==========================================================
 
+import os
+
 UPLOAD_FOLDER = os.path.join("static", "uploads")
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# Create uploads folder if it doesn't exist
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # ==========================================================
 # DATABASE
@@ -106,12 +109,11 @@ def get_db():
 def create_tables():
 
     conn = get_db()
-
     cursor = conn.cursor()
 
-    # ----------------------------------------
+    # -------------------------
     # CUSTOMERS
-    # ----------------------------------------
+    # -------------------------
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS customers(
@@ -125,24 +127,23 @@ def create_tables():
         password TEXT NOT NULL,
 
         phone TEXT
-
     )
     """)
 
-    # ----------------------------------------
+    # -------------------------
     # PROVIDERS
-    # ----------------------------------------
+    # -------------------------
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS providers(
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        name TEXT,
+        name TEXT NOT NULL,
 
-        email TEXT UNIQUE,
+        email TEXT UNIQUE NOT NULL,
 
-        password TEXT,
+        password TEXT NOT NULL,
 
         phone TEXT,
 
@@ -154,20 +155,19 @@ def create_tables():
 
         image TEXT,
 
-        basic_package INTEGER,
+        basic_package INTEGER DEFAULT 0,
 
-        premium_package INTEGER,
+        premium_package INTEGER DEFAULT 0,
 
-        luxury_package INTEGER,
+        luxury_package INTEGER DEFAULT 0,
 
         status TEXT DEFAULT 'Pending'
-
     )
     """)
 
-    # ----------------------------------------
+    # -------------------------
     # BOOKINGS
-    # ----------------------------------------
+    # -------------------------
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS bookings(
@@ -193,16 +193,13 @@ def create_tables():
         payment_status TEXT DEFAULT 'Pending',
 
         status TEXT DEFAULT 'Pending'
-
     )
     """)
 
     conn.commit()
-
     conn.close()
 
-    print("✓ Basic database tables created successfully.")
-
+    print("✓ Database initialized successfully.")
 # ==========================================================
 # INITIALIZE DATABASE
 # ==========================================================
@@ -253,26 +250,42 @@ if not os.path.exists(app.config["UPLOAD_FOLDER"]):
 # SAVE IMAGE
 # ==========================================================
 
+from werkzeug.utils import secure_filename
+import os
+
 def save_image(image):
 
-    if image is None:
+    try:
+
+        # No file uploaded
+        if image is None:
+            return ""
+
+        if image.filename is None:
+            return ""
+
+        if image.filename.strip() == "":
+            return ""
+
+        filename = secure_filename(image.filename)
+
+        upload_folder = app.config["UPLOAD_FOLDER"]
+
+        # Create upload folder if it doesn't exist
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+
+        filepath = os.path.join(upload_folder, filename)
+
+        image.save(filepath)
+
+        return filename
+
+    except Exception as e:
+
+        print("SAVE IMAGE ERROR:", e)
+
         return ""
-
-    if image.filename == "":
-        return ""
-
-    filename = secure_filename(image.filename)
-
-    image.save(
-        os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            filename
-        )
-    )
-
-    return filename
-
-
 # ==========================================================
 # SEND EMAIL
 # ==========================================================
@@ -1101,50 +1114,54 @@ print("=" * 60)
 
 
 # ==========================================================
-# PROVIDER REGISTER PAGE
-# ==========================================================
-
-@app.route("/provider-register")
-def provider_register():
-    return render_template("provider_register.html")
-
-
-# ==========================================================
 # PROVIDER REGISTER
 # ==========================================================
 
 @app.route("/provider-submit", methods=["POST"])
 def provider_submit():
 
-    try:
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-        phone = request.form.get("phone", "").strip()
-        service = request.form.get("service", "")
-        experience = request.form.get("experience", "")
-        description = request.form.get("description", "")
+    print("========== PROVIDER SUBMIT START ==========")
 
-        basic_package = request.form.get("basic_package", "")
-        premium_package = request.form.get("premium_package", "")
-        luxury_package = request.form.get("luxury_package", "")
+    try:
+
+        print("Form Data:")
+        print(request.form)
+
+        print("Files:")
+        print(request.files)
+
+        name = request.form.get("name")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        phone = request.form.get("phone")
+        service = request.form.get("service")
+        experience = request.form.get("experience")
+        description = request.form.get("description")
+
+        basic_package = request.form.get("basic_package")
+        premium_package = request.form.get("premium_package")
+        luxury_package = request.form.get("luxury_package")
 
         image = request.files.get("image")
 
         filename = ""
 
-        if image and image.filename:
+        if image and image.filename != "":
             filename = save_image(image)
 
         conn = get_db()
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT id FROM providers WHERE email=?",
+            "SELECT * FROM providers WHERE email=?",
             (email,)
         )
 
-        if cursor.fetchone():
+        existing = cursor.fetchone()
+
+        print("Existing Provider:", existing)
+
+        if existing:
             conn.close()
             flash("Email already registered.", "danger")
             return redirect("/provider-register")
@@ -1166,11 +1183,8 @@ def provider_submit():
                 status
             )
             VALUES
-            (
-                ?,?,?,?,?,?,?,?,?,?,?,?
-            )
-        """,
-        (
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
             name,
             email,
             password,
@@ -1188,6 +1202,8 @@ def provider_submit():
         conn.commit()
         conn.close()
 
+        print("Provider inserted successfully.")
+
         flash(
             "Registration Successful. Waiting for Admin Approval.",
             "success"
@@ -1196,17 +1212,14 @@ def provider_submit():
         return redirect("/provider-login")
 
     except Exception as e:
-        print("PROVIDER REGISTER ERROR:", e)
-        flash(str(e), "danger")
-        return redirect("/provider-register")
-    except Exception as e:
 
         import traceback
+
         traceback.print_exc()
 
         return f"""
-        <h2>{type(e).__name__}</h2>
-        <pre>{e}</pre>
+        <h1>ERROR</h1>
+        <pre>{traceback.format_exc()}</pre>
         """, 500
 
 
