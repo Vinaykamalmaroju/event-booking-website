@@ -355,17 +355,14 @@ def send_email(
 # ==========================================================
 
 def customer_logged_in():
-
     return "customer_id" in session
 
 
 def provider_logged_in():
-
-    return "provider_email" in session
+    return "provider_id" in session
 
 
 def admin_logged_in():
-
     return "admin" in session
 
 
@@ -1214,8 +1211,53 @@ def provider_submit():
 
 
 # ==========================================================
-# PROVIDER LOGIN
+# VIEW ALL APPROVED PROVIDERS
 # ==========================================================
+
+@app.route("/providers")
+def providers():
+
+    search = request.args.get("search", "").strip()
+    service = request.args.get("service", "").strip()
+
+    conn = get_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    query = """
+        SELECT *
+        FROM providers
+        WHERE status='Approved'
+    """
+
+    values = []
+
+    if search:
+        query += " AND name LIKE ?"
+        values.append(f"%{search}%")
+
+    if service:
+        query += " AND service=?"
+        values.append(service)
+
+    query += " ORDER BY name ASC"
+
+    cursor.execute(query, values)
+
+    providers = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "providers.html",
+        providers=providers,
+        search=search,
+        service=service
+    )
+
+
+
+
 
 # ==========================================================
 # PROVIDER LOGIN
@@ -1228,29 +1270,39 @@ def provider_login():
         return render_template("provider_login.html")
 
     email = request.form.get("email", "").strip().lower()
-    password = request.form.get("password", "")
+    password = request.form.get("password", "").strip()
 
     conn = get_db()
-    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
         FROM providers
         WHERE email = ?
-        AND password = ?
-        AND status = ?
+          AND password = ?
+          AND status = ?
     """, (email, password, "Approved"))
 
     provider = cursor.fetchone()
 
     conn.close()
 
-    if provider is not None:
+    if provider:
+
+        print("=" * 50)
+        print("PROVIDER LOGIN SUCCESS")
+        print("Provider ID:", provider["id"])
+        print("Provider Name:", provider["name"])
+        print("Provider Email:", provider["email"])
+        print("=" * 50)
+
+        session.clear()
 
         session["provider_id"] = provider["id"]
         session["provider_email"] = provider["email"]
         session["provider_name"] = provider["name"]
+
+        print("SESSION:", dict(session))
 
         flash(
             "Login Successful.",
@@ -1259,8 +1311,13 @@ def provider_login():
 
         return redirect("/provider-dashboard")
 
+    print("=" * 50)
+    print("PROVIDER LOGIN FAILED")
+    print("Email:", email)
+    print("=" * 50)
+
     flash(
-        "Invalid email, password, or your account is not yet approved.",
+        "Invalid email, password, or your account is still pending approval.",
         "danger"
     )
 
@@ -1269,23 +1326,35 @@ def provider_login():
 # PROVIDER DASHBOARD
 # ==========================================================
 
+# ==========================================================
+# PROVIDER DASHBOARD
+# ==========================================================
+
 @app.route("/provider-dashboard")
 def provider_dashboard():
 
-    if not provider_logged_in():
+    # Check login
+    if "provider_id" not in session:
+        flash("Please login first.", "danger")
         return redirect("/provider-login")
 
-    provider = get_provider(session.get("provider_id"))
+    provider_id = session["provider_id"]
+
+    # Get provider details
+    provider = get_provider(provider_id)
 
     if provider is None:
-        flash("Provider not found.", "danger")
+        session.clear()
+        flash("Provider account not found.", "danger")
         return redirect("/provider-login")
 
     conn = get_db()
-    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    # ------------------------------------
     # Total Bookings
+    # ------------------------------------
+
     cursor.execute("""
         SELECT COUNT(*)
         FROM bookings
@@ -1294,7 +1363,10 @@ def provider_dashboard():
 
     total_bookings = cursor.fetchone()[0]
 
+    # ------------------------------------
     # Approved Bookings
+    # ------------------------------------
+
     cursor.execute("""
         SELECT COUNT(*)
         FROM bookings
@@ -1304,9 +1376,11 @@ def provider_dashboard():
 
     approved_bookings = cursor.fetchone()[0]
 
-    # Default values
+    # ------------------------------------
+    # Total Earnings
+    # ------------------------------------
+
     total_earnings = 0
-    month_earnings = 0
 
     try:
 
@@ -1317,7 +1391,18 @@ def provider_dashboard():
             AND status='Approved'
         """, (provider["email"],))
 
-        total_earnings = cursor.fetchone()[0]
+        total_earnings = cursor.fetchone()[0] or 0
+
+    except Exception as e:
+        print("Total Earnings Error:", e)
+
+    # ------------------------------------
+    # Current Month Earnings
+    # ------------------------------------
+
+    month_earnings = 0
+
+    try:
 
         cursor.execute("""
             SELECT IFNULL(SUM(amount),0)
@@ -1327,12 +1412,20 @@ def provider_dashboard():
             AND strftime('%Y-%m', booking_date)=strftime('%Y-%m','now')
         """, (provider["email"],))
 
-        month_earnings = cursor.fetchone()[0]
+        month_earnings = cursor.fetchone()[0] or 0
 
     except Exception as e:
-        print("Earnings Error:", e)
+        print("Month Earnings Error:", e)
 
     conn.close()
+
+    print("=" * 60)
+    print("PROVIDER DASHBOARD LOADED")
+    print("Provider ID :", provider["id"])
+    print("Provider Name :", provider["name"])
+    print("Provider Email :", provider["email"])
+    print("Session :", dict(session))
+    print("=" * 60)
 
     return render_template(
         "provider_dashboard.html",
@@ -1344,9 +1437,6 @@ def provider_dashboard():
     )
 
 
-# ==========================================================
-# EDIT PROVIDER PROFILE
-# ==========================================================
 
 # ==========================================================
 # PROVIDER EDIT PROFILE
@@ -1355,27 +1445,33 @@ def provider_dashboard():
 @app.route("/provider-edit")
 def provider_edit():
 
-    if not provider_logged_in():
+    # Check if provider is logged in
+    if "provider_id" not in session:
+        flash("Please login first.", "danger")
         return redirect("/provider-login")
 
-    provider_id = session.get("provider_id")
+    provider_id = session["provider_id"]
 
-    if not provider_id:
-        flash("Please login again.", "danger")
-        return redirect("/provider-login")
-
+    # Get provider details
     provider = get_provider(provider_id)
 
+    # Provider not found
     if provider is None:
-        flash("Provider not found.", "danger")
+
+        session.clear()
+
+        flash(
+            "Provider account not found. Please login again.",
+            "danger"
+        )
+
         return redirect("/provider-login")
 
+    # Open edit profile page
     return render_template(
         "provider_edit.html",
         provider=provider
     )
-
-
 # ==========================================================
 # UPDATE PROVIDER PROFILE
 # ==========================================================
