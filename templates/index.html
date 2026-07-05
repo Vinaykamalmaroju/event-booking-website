@@ -41,6 +41,10 @@ href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 
 <body>
 
+<!-- ===========================
+        HEADER
+=========================== -->
+
 <header>
 
     <div class="logo">
@@ -51,15 +55,15 @@ href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 
         <a href="/">Home</a>
 
-        <a href="/booking">Book</a>
+        <a href="/booking">Book Event</a>
 
-        <a href="/booking-history">Track</a>
+        <a href="/booking-history">Track Booking</a>
 
         <a href="/payment">Payment</a>
 
         <a href="/contact">Contact</a>
 
-        <!-- Services Dropdown -->
+        <!-- Services -->
         <div class="dropdown">
 
             <button class="dropbtn">
@@ -80,7 +84,7 @@ href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 
         </div>
 
-        <!-- Login Dropdown -->
+        <!-- Login -->
         <div class="dropdown">
 
             <button class="dropbtn">
@@ -91,6 +95,10 @@ href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 
                 <a href="/provider-login">
                     Provider Login
+                </a>
+
+                <a href="/customer-login">
+                    Customer Login
                 </a>
 
                 <a href="/customer-register">
