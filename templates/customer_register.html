@@ -1,21 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Customer Registration</title>
 
+    <!-- Common CSS -->
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/common.css') }}">
 
+    <!-- Customer Register CSS -->
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/customer_register.css') }}">
 
+    <!-- Animations -->
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/animations.css') }}">
 
-          <link rel="stylesheet"
-href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+    <!-- Floating Chat Button -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+    <!-- Chat Widget -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chat_widget.css') }}">
 
 </head>
 
@@ -25,40 +36,47 @@ href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 
     <h2>Customer Registration</h2>
 
-    <!-- CHANGED HERE -->
     <form action="/customer-submit" method="POST">
 
         <div class="input-group">
-            <label>Full Name</label>
+            <label for="name">Full Name</label>
+
             <input
                 type="text"
+                id="name"
                 name="name"
-                placeholder="Enter your name"
+                placeholder="Enter your full name"
                 required>
         </div>
 
         <div class="input-group">
-            <label>Email Address</label>
+            <label for="email">Email Address</label>
+
             <input
                 type="email"
+                id="email"
                 name="email"
                 placeholder="Enter your email"
                 required>
         </div>
 
         <div class="input-group">
-            <label>Password</label>
+            <label for="password">Password</label>
+
             <input
                 type="password"
+                id="password"
                 name="password"
                 placeholder="Create password"
                 required>
         </div>
 
         <div class="input-group">
-            <label>Phone Number</label>
+            <label for="phone">Phone Number</label>
+
             <input
                 type="text"
+                id="phone"
                 name="phone"
                 placeholder="Enter phone number"
                 required>
@@ -76,27 +94,20 @@ href="{{ url_for('static', filename='css/chatbot_button.css') }}">
         <a href="/customer-login">
             Login Here
         </a>
-
     </div>
 
 </div>
 
-
-<!-- Chat Widget -->
+<!-- AI Chat Widget -->
 {% include "chat_widget.html" %}
 
-<link rel="stylesheet"
-href="{{ url_for('static', filename='css/chat_widget.css') }}">
+<!-- Floating Chat Button -->
+<a href="/chat" class="chatbot-button">
+    💬
+</a>
 
+<!-- Chat Widget Script -->
 <script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
 
 </body>
-
-<a href="/chat"
-class="chatbot-button">
-
-💬
-
-</a>
-
 </html>

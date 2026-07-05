@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Revenue</title>
+
+    <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}"
+          type="image/x-icon">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin_revenue.css') }}">
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Admin Dashboard</h1>
+
+    <nav>
+
+        <a href="/admin-dashboard">Dashboard</a>
+
+        <a href="/admin-customers">Customers</a>
+
+        <a href="/admin-providers">Providers</a>
+
+        <a href="/admin-bookings">Bookings</a>
+
+        <a href="/admin-payments">Payments</a>
+
+        <a href="/admin-contacts">Contacts</a>
+
+        <a href="/admin-revenue" class="active">Revenue</a>
+
+        <a href="/logout">Logout</a>
+
+    </nav>
+
+</header>
+
+<div class="container">
+
+    <h2>💰 Revenue Dashboard</h2>
+
+    <p class="subtitle">
+
+        View payment and revenue statistics.
+
+    </p>
+
+    <div class="cards">
+
+        <div class="card">
+
+            <h3>Total Revenue</h3>
+
+            <div class="amount">
+
+                ₹{{ total_revenue }}
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Total Payments</h3>
+
+            <div class="number">
+
+                {{ total_payments }}
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Successful Payments</h3>
+
+            <div class="number success">
+
+                {{ successful_payments }}
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Pending Payments</h3>
+
+            <div class="number pending">
+
+                {{ pending_payments }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="summary">
+
+        <h3>Revenue Summary</h3>
+
+        <table>
+
+            <tr>
+
+                <th>Total Revenue</th>
+
+                <td>₹{{ total_revenue }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Total Transactions</th>
+
+                <td>{{ total_payments }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Successful Payments</th>
+
+                <td>{{ successful_payments }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Pending Payments</th>
+
+                <td>{{ pending_payments }}</td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

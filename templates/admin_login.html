@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,11 +5,16 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Admin Login | Event Booking Website</title>
 
+    <!-- Favicon -->
+    <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}"
+          type="image/x-icon">
+
+    <!-- CSS Files -->
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/common.css') }}">
 
@@ -19,58 +23,55 @@
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/animations.css') }}">
+
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chat_widget.css') }}">
 
 </head>
 
 <body class="fade-in">
+
+<!-- ================= HEADER ================= -->
 
 <header class="fade-in">
 
     <h1>Event Booking Website</h1>
 
     <nav>
-
         <a href="/">Home</a>
-
         <a href="/booking">Book Event</a>
-
         <a href="/providers">Providers</a>
-
         <a href="/contact">Contact</a>
-
     </nav>
 
 </header>
+
+<!-- ================= LOGIN CONTAINER ================= -->
 
 <div class="login-container slide-up">
 
     <div class="login-box hover-card">
 
         <div class="login-icon zoom">
-
             🔐
-
         </div>
 
         <h1 class="fade-in">
-
             Administrator Login
-
         </h1>
 
         <p class="fade-in">
-
-            Login to manage bookings, providers, customer messages,
+            Login to manage bookings, providers, customers,
             payments and reports.
-
         </p>
 
-        <form
-            method="POST"
-            action="/login">
+        <!-- ================= LOGIN FORM ================= -->
+
+        <form method="POST"
+              action="{{ url_for('admin_login') }}">
 
             <input
                 class="zoom"
@@ -98,9 +99,8 @@
 
         <br>
 
-        <a
-            href="/"
-            class="back-home">
+        <a href="/"
+           class="back-home">
 
             ← Back to Home
 
@@ -108,22 +108,21 @@
 
     </div>
 
+</div>
 
-<!-- Chat Widget -->
+<!-- ================= CHAT WIDGET ================= -->
+
 {% include "chat_widget.html" %}
 
-<link rel="stylesheet"
-href="{{ url_for('static', filename='css/chat_widget.css') }}">
+<!-- Floating Chat Button -->
+
+<a href="/chat" class="chatbot-button">
+    💬
+</a>
+
+<!-- Chat Script -->
 
 <script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
 
 </body>
-
-<a href="/chat"
-class="chatbot-button">
-
-💬
-
-</a>
-
 </html>

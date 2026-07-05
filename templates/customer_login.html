@@ -10,20 +10,42 @@
 
     <title>Customer Login</title>
 
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}"
+          type="image/x-icon">
 
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Common CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <!-- Login CSS -->
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/customer_login.css') }}">
 
-<link rel="stylesheet"
+    <!-- Animations -->
+    <link rel="stylesheet"
           href="{{ url_for('static', filename='css/animations.css') }}">
 
-<link rel="stylesheet"
-href="{{ url_for('static', filename='css/chatbot_button.css') }}">
-          
+    <!-- Chat Button -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 
+    <!-- Chat Widget -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chat_widget.css') }}">
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </head>
 
@@ -95,19 +117,32 @@ href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 <!-- Chat Widget -->
 {% include "chat_widget.html" %}
 
-<link rel="stylesheet"
-href="{{ url_for('static', filename='css/chat_widget.css') }}">
-
 <script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
 
+<!-- Floating Chat Button -->
+<a href="/chat" class="chatbot-button">
+    💬
+</a>
+
+<!-- SweetAlert Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+
+    <script>
+
+    Swal.fire({
+        icon: "{% if category == 'success' %}success{% elif category == 'danger' %}error{% elif category == 'warning' %}warning{% else %}info{% endif %}",
+        title: "{{ message }}",
+        confirmButtonColor: "#2563eb",
+        confirmButtonText: "OK"
+    });
+
+    </script>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 
 </body>
-
-<a href="/chat"
-class="chatbot-button">
-
-💬
-
-</a>
 
 </html>

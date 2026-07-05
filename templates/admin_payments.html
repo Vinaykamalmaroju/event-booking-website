@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Payments</title>
+
+    <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}"
+          type="image/x-icon">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin_payments.css') }}">
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Admin Dashboard</h1>
+
+    <nav>
+
+        <a href="/admin-dashboard">Dashboard</a>
+
+        <a href="/admin-customers">Customers</a>
+
+        <a href="/admin-providers">Providers</a>
+
+        <a href="/admin-bookings">Bookings</a>
+
+        <a href="/admin-payments" class="active">Payments</a>
+
+        <a href="/admin-contacts">Contacts</a>
+
+        <a href="/logout">Logout</a>
+
+    </nav>
+
+</header>
+
+<div class="container">
+
+    <h2>💳 Payment Management</h2>
+
+    <p class="subtitle">
+
+        View all customer payment transactions.
+
+    </p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div class="alert {{ category }}">
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+    {% endwith %}
+
+    {% if payments %}
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Booking ID</th>
+
+                <th>Customer</th>
+
+                <th>Email</th>
+
+                <th>Provider</th>
+
+                <th>Amount (₹)</th>
+
+                <th>Payment Method</th>
+
+                <th>Status</th>
+
+                <th>Date</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for payment in payments %}
+
+            <tr>
+
+                <td>{{ payment[0] }}</td>
+
+                <td>{{ payment[1] }}</td>
+
+                <td>{{ payment[2] }}</td>
+
+                <td>{{ payment[3] }}</td>
+
+                <td>{{ payment[4] }}</td>
+
+                <td>₹{{ payment[5] }}</td>
+
+                <td>{{ payment[6] }}</td>
+
+                <td>
+
+                    {% if payment[7] == "Paid" %}
+
+                        <span class="paid">
+
+                            Paid
+
+                        </span>
+
+                    {% elif payment[7] == "Pending" %}
+
+                        <span class="pending">
+
+                            Pending
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="failed">
+
+                            Failed
+
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>{{ payment[8] }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="empty">
+
+        <h3>No Payments Found</h3>
+
+        <p>
+
+            No customer payments have been made yet.
+
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+
+</html>

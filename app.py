@@ -20,7 +20,8 @@ from flask import (
     session,
     jsonify,
     Response,
-    flash
+    flash,
+    url_for
 )
 
 from werkzeug.utils import secure_filename
@@ -165,34 +166,88 @@ def create_tables():
     )
     """)
 
-    # -------------------------
-    # BOOKINGS
-    # -------------------------
+# ==========================================================
+# REVIEWS
+# ==========================================================
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS reviews(
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    provider_id INTEGER NOT NULL,
+
+    provider_email TEXT NOT NULL,
+
+    customer_name TEXT NOT NULL,
+
+    rating INTEGER NOT NULL,
+
+    review TEXT NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+)
+""")
+
+
+# -------------------------
+# BOOKINGS
+# -------------------------
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS bookings(
 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        name TEXT,
+    name TEXT,
 
-        email TEXT,
+    email TEXT,
 
-        phone TEXT,
+    phone TEXT,
 
-        date TEXT,
+    date TEXT,
 
-        service TEXT,
+    service TEXT,
 
-        provider_email TEXT,
+    provider_email TEXT,
 
-        amount REAL DEFAULT 0,
+    amount REAL DEFAULT 0,
 
-        payment_id TEXT,
+    payment_id TEXT,
 
-        payment_status TEXT DEFAULT 'Pending',
+    payment_status TEXT DEFAULT 'Pending',
 
-        status TEXT DEFAULT 'Pending'
+    status TEXT DEFAULT 'Pending'
+)
+""")
+
+
+# ==========================================================
+# PAYMENTS TABLE
+# ==========================================================
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS payments(
+                   
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    booking_id INTEGER,
+
+    customer_name TEXT,
+
+    customer_email TEXT,
+
+    provider_name TEXT,
+
+    amount REAL,
+
+    payment_method TEXT,
+
+    payment_status TEXT DEFAULT 'Pending',
+
+    payment_date TEXT
+
     )
     """)
 
@@ -476,16 +531,14 @@ def get_customer(customer_id):
 
     conn = get_db()
 
+    conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
 
     cursor.execute("""
-
         SELECT *
-
         FROM customers
-
         WHERE id=?
-
     """, (customer_id,))
 
     customer = cursor.fetchone()
@@ -699,54 +752,48 @@ def reviews():
     )
 
 
-# ==========================================================
-# SUBMIT REVIEW
-# ==========================================================
-
 @app.route("/submit-review", methods=["POST"])
 def submit_review():
 
-    name = request.form["name"]
+    if not customer_logged_in():
+        return redirect("/customer-login")
+
+    provider_id = request.form["provider_id"]
+    provider_email = request.form["provider_email"]
     rating = request.form["rating"]
     review = request.form["review"]
 
-    conn = get_db()
+    customer_name = session["customer_name"]
 
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
         INSERT INTO reviews
         (
-            name,
+            provider_id,
+            provider_email,
+            customer_name,
             rating,
-            review,
-            review_date
+            review
         )
-
-        VALUES
-        (
-            ?,?,?,?
-        )
+        VALUES (?, ?, ?, ?, ?)
     """, (
 
-        name,
+        provider_id,
+        provider_email,
+        customer_name,
         rating,
-        review,
-        current_date()
+        review
 
     ))
 
     conn.commit()
     conn.close()
 
-    flash(
-        "Thank you for your review!",
-        "success"
-    )
+    flash("Review Submitted Successfully!", "success")
 
-    return redirect("/reviews")
-
-
+    return redirect(f"/provider/{provider_id}")
 
 # ==========================================================
 # FAQ PAGE
@@ -793,7 +840,17 @@ def gallery():
 @app.errorhandler(404)
 def page_not_found(error):
 
-    return render_template("404.html"), 404
+    return f"""
+    <h2>404 - Page Not Found</h2>
+
+    <p>
+        The requested URL was not found.
+    </p>
+
+    <p>
+        URL: {request.path}
+    </p>
+    """, 404
 
 
 print("=" * 60)
@@ -807,16 +864,22 @@ print("=" * 60)
 # CUSTOMER REGISTER
 # ==========================================================
 
+# ==========================================================
+# CUSTOMER REGISTER
+# ==========================================================
+
 @app.route("/customer-register")
 def customer_register():
-
     return render_template("customer_register.html")
+
 
 
 @app.route("/customer-submit", methods=["POST"])
 def customer_submit():
 
-    name = request.form["name"].strip()
+    print("========== CUSTOMER REGISTER ==========")
+
+    name = request.form["name"]
     email = request.form["email"].strip().lower()
     password = request.form["password"]
     phone = request.form["phone"]
@@ -829,38 +892,27 @@ def customer_submit():
         (email,)
     )
 
-    if cursor.fetchone():
+    existing = cursor.fetchone()
+
+    if existing:
 
         conn.close()
 
         flash(
-            "Email already registered.",
-            "danger"
+            "Email already registered!",
+            "error"
         )
 
-        return redirect("/customer-register")
+        return redirect(url_for("customer_register"))
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO customers
-        (
-            name,
-            email,
-            password,
-            phone
-        )
-
-        VALUES
-        (
-            ?,?,?,?
-        )
-    """, (
-
-        name,
-        email,
-        password,
-        phone
-
-    ))
+        (name, email, password, phone)
+        VALUES (?, ?, ?, ?)
+        """,
+        (name, email, password, phone)
+    )
 
     conn.commit()
     conn.close()
@@ -870,9 +922,7 @@ def customer_submit():
         "success"
     )
 
-    return redirect("/customer-login")
-
-
+    return redirect(url_for("customer_login"))
 # ==========================================================
 # LOGIN REDIRECT
 # ==========================================================
@@ -886,33 +936,31 @@ def login():
 # CUSTOMER LOGIN
 # ==========================================================
 
+# ==========================================================
+# CUSTOMER LOGIN
+# ==========================================================
+
 @app.route("/customer-login", methods=["GET", "POST"])
 def customer_login():
 
     if request.method == "GET":
+        return render_template("customer_login.html")
 
-        return render_template(
-            "customer_login.html"
-        )
+    email = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
 
-    email = request.form["email"].strip().lower()
-    password = request.form["password"]
+    print("Login Attempt:", email)
 
     conn = get_db()
-
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
         FROM customers
-        WHERE email=?
+        WHERE LOWER(email)=?
         AND password=?
-    """, (
-
-        email,
-        password
-
-    ))
+    """, (email, password))
 
     customer = cursor.fetchone()
 
@@ -920,24 +968,20 @@ def customer_login():
 
     if customer:
 
+        print("Customer Found:", customer["name"])
+
         session["customer_id"] = customer["id"]
         session["customer_name"] = customer["name"]
         session["customer_email"] = customer["email"]
 
-        flash(
-            "Welcome Back!",
-            "success"
-        )
+        flash("Welcome Back!", "success")
 
-        return redirect("/customer-dashboard")
+        return redirect(url_for("customer_dashboard"))
 
-    flash(
-        "Invalid Email or Password",
-        "danger"
-    )
+    print("Login Failed")
 
-    return redirect("/customer-login")
-
+    flash("Invalid Email or Password.", "danger")
+    return redirect(url_for("customer_login"))
 
 # ==========================================================
 # CUSTOMER DASHBOARD
@@ -946,6 +990,9 @@ def customer_login():
 @app.route("/customer-dashboard")
 def customer_dashboard():
 
+    print("Session:", dict(session))
+
+
     if not customer_logged_in():
 
         return redirect("/customer-login")
@@ -953,6 +1000,8 @@ def customer_dashboard():
     customer = get_customer(
         session["customer_id"]
     )
+
+    print("Customer:", customer)
 
     conn = get_db()
 
@@ -1078,6 +1127,32 @@ def customer_update():
 
     return redirect("/customer-profile")
 
+@app.route("/customer-support")
+def customer_support():
+    return render_template("customer_support.html")
+
+
+@app.route("/customer-support", methods=["POST"])
+def customer_support_submit():
+
+    name = request.form["name"]
+    email = request.form["email"]
+    subject = request.form["subject"]
+    message = request.form["message"]
+
+    print("Support Request")
+    print(name)
+    print(email)
+    print(subject)
+    print(message)
+
+    flash(
+        "Your support request has been submitted successfully!",
+        "success"
+    )
+
+    return redirect("/customer-support")
+
 
 # ==========================================================
 # CUSTOMER LOGOUT
@@ -1118,15 +1193,7 @@ def provider_register():
 @app.route("/provider-submit", methods=["POST"])
 def provider_submit():
 
-    print("========== PROVIDER SUBMIT START ==========")
-
     try:
-
-        print("Form Data:")
-        print(request.form)
-
-        print("Files:")
-        print(request.files)
 
         name = request.form.get("name")
         email = request.form.get("email")
@@ -1144,7 +1211,7 @@ def provider_submit():
 
         filename = ""
 
-        if image and image.filename != "":
+        if image and image.filename:
             filename = save_image(image)
 
         conn = get_db()
@@ -1155,14 +1222,13 @@ def provider_submit():
             (email,)
         )
 
-        existing = cursor.fetchone()
+        if cursor.fetchone():
 
-        print("Existing Provider:", existing)
-
-        if existing:
             conn.close()
-            flash("Email already registered.", "danger")
-            return redirect("/provider-register")
+
+            flash("Email already registered.", "error")
+
+            return redirect(url_for("provider_register"))
 
         cursor.execute("""
             INSERT INTO providers
@@ -1180,9 +1246,11 @@ def provider_submit():
                 luxury_package,
                 status
             )
+
             VALUES
             (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
+
             name,
             email,
             password,
@@ -1195,19 +1263,18 @@ def provider_submit():
             premium_package,
             luxury_package,
             "Pending"
+
         ))
 
         conn.commit()
         conn.close()
 
-        print("Provider inserted successfully.")
-
         flash(
-            "Registration Successful. Waiting for Admin Approval.",
+            "Registration Successful! Your account is waiting for Admin Approval. Please login after approval.",
             "success"
         )
 
-        return redirect("/provider-login")
+        return redirect(url_for("provider_login"))
 
     except Exception as e:
 
@@ -1216,7 +1283,7 @@ def provider_submit():
         traceback.print_exc()
 
         return f"""
-        <h1>ERROR</h1>
+        <h2>Provider Registration Error</h2>
         <pre>{traceback.format_exc()}</pre>
         """, 500
 
@@ -1644,8 +1711,6 @@ def booking():
         "booking.html",
         providers=providers
     )
-
-
 # ==========================================================
 # PROVIDER DETAILS
 # ==========================================================
@@ -1658,26 +1723,10 @@ def provider_profile(provider_id):
     if provider is None:
         return "Provider Not Found"
 
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT *
-        FROM reviews
-        WHERE provider_email=?
-        ORDER BY id DESC
-    """, (provider["email"],))
-
-    reviews = cursor.fetchall()
-
-    conn.close()
-
     return render_template(
         "provider_details.html",
-        provider=provider,
-        reviews=reviews
+        provider=provider
     )
-
 
 # ==========================================================
 # AVAILABLE DATES
@@ -1730,38 +1779,25 @@ def submit_booking():
     conn = get_db()
     cursor = conn.cursor()
 
+    # Check if provider is already booked
     cursor.execute("""
         SELECT COUNT(*)
         FROM bookings
-        WHERE
-            provider_email=?
-        AND
-            date=?
-        AND
-            status!='Cancelled'
-    """, (
-
-        provider_email,
-        date
-
-    ))
+        WHERE provider_email = ?
+        AND date = ?
+        AND status != 'Cancelled'
+    """, (provider_email, date))
 
     booked = cursor.fetchone()[0]
 
     if booked > 0:
-
         conn.close()
-
-        flash(
-            "Provider is already booked on this date.",
-            "danger"
-        )
-
+        flash("Provider is already booked on this date.", "danger")
         return redirect("/booking")
 
+    # Insert booking
     cursor.execute("""
-        INSERT INTO bookings
-        (
+        INSERT INTO bookings (
             name,
             email,
             phone,
@@ -1770,13 +1806,8 @@ def submit_booking():
             provider_email,
             status
         )
-
-        VALUES
-        (
-            ?,?,?,?,?,?,?
-        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
-
         name,
         email,
         phone,
@@ -1784,20 +1815,14 @@ def submit_booking():
         service,
         provider_email,
         "Pending"
-
     ))
 
     conn.commit()
-
     conn.close()
 
-    flash(
-        "Booking Submitted Successfully.",
-        "success"
-    )
+    flash("Booking Submitted Successfully.", "success")
 
     return redirect("/booking-history")
-
 
 # ==========================================================
 # BOOKING HISTORY
@@ -2052,34 +2077,283 @@ def admin_dashboard():
 
 
 # ==========================================================
+# ADMIN PROVIDERS
+# ==========================================================
+
+@app.route("/admin-providers")
+def admin_providers():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM providers
+        ORDER BY id DESC
+    """)
+
+    providers = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_providers.html",
+        providers=providers
+    )
+
+# ==========================================================
+# ADMIN BOOKINGS
+# ==========================================================
+
+@app.route("/admin-bookings")
+def admin_bookings():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM bookings
+        ORDER BY id DESC
+    """)
+
+    bookings = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_bookings.html",
+        bookings=bookings
+    )
+
+
+# ==========================================================
+# ADMIN PAYMENTS
+# ==========================================================
+
+@app.route("/admin-payments")
+def admin_payments():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM payments
+        ORDER BY id DESC
+    """)
+
+    payments = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_payments.html",
+        payments=payments
+    )
+
+@app.route("/payment")
+def payment():
+    return render_template("payment_disabled.html")
+
+
+
+# ==========================================================
+# ADMIN REVENUE
+# ==========================================================
+
+@app.route("/admin-revenue")
+def admin_revenue():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Total revenue from successful payments
+    cursor.execute("""
+        SELECT IFNULL(SUM(amount), 0)
+        FROM payments
+        WHERE payment_status='Paid'
+    """)
+
+    total_revenue = cursor.fetchone()[0]
+
+    # Total number of payments
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM payments
+    """)
+
+    total_payments = cursor.fetchone()[0]
+
+    # Successful payments
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM payments
+        WHERE payment_status='Paid'
+    """)
+
+    successful_payments = cursor.fetchone()[0]
+
+    # Pending payments
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM payments
+        WHERE payment_status='Pending'
+    """)
+
+    pending_payments = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template(
+        "admin_revenue.html",
+        total_revenue=total_revenue,
+        total_payments=total_payments,
+        successful_payments=successful_payments,
+        pending_payments=pending_payments
+    )
+
+
+# ==========================================================
+# ADMIN ANALYTICS
+# ==========================================================
+
+@app.route("/admin-analytics")
+def admin_analytics():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Total Customers
+    cursor.execute("SELECT COUNT(*) FROM customers")
+    total_customers = cursor.fetchone()[0]
+
+    # Total Providers
+    cursor.execute("SELECT COUNT(*) FROM providers")
+    total_providers = cursor.fetchone()[0]
+
+    # Total Bookings
+    cursor.execute("SELECT COUNT(*) FROM bookings")
+    total_bookings = cursor.fetchone()[0]
+
+    # Pending Providers
+    cursor.execute("SELECT COUNT(*) FROM providers WHERE status='Pending'")
+    pending_providers = cursor.fetchone()[0]
+
+    # Approved Providers
+    cursor.execute("SELECT COUNT(*) FROM providers WHERE status='Approved'")
+    approved_providers = cursor.fetchone()[0]
+
+    # Completed Bookings
+    cursor.execute("SELECT COUNT(*) FROM bookings WHERE status='Completed'")
+    completed_bookings = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template(
+        "admin_analytics.html",
+        total_customers=total_customers,
+        total_providers=total_providers,
+        total_bookings=total_bookings,
+        pending_providers=pending_providers,
+        approved_providers=approved_providers,
+        completed_bookings=completed_bookings
+    )
+
+
+    # ==========================================================
+# ADMIN SETTINGS
+# ==========================================================
+
+@app.route("/admin-settings")
+def admin_settings():
+
+    return render_template("admin_settings.html")
+
+
+
+# ==========================================================
+# ADMIN CONTACT MESSAGES
+# ==========================================================
+
+@app.route("/admin-contacts")
+def admin_contacts():
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM contacts
+        ORDER BY id DESC
+    """)
+
+    contacts = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_contacts.html",
+        contacts=contacts
+    )
+
+
+# ==========================================================
+# DELETE CONTACT MESSAGE
+# ==========================================================
+
+@app.route("/delete-contact/<int:id>")
+def delete_contact(id):
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+
+        "DELETE FROM contacts WHERE id=?",
+
+        (id,)
+
+    )
+
+    conn.commit()
+
+    conn.close()
+
+    flash(
+
+        "Contact message deleted successfully.",
+
+        "success"
+
+    )
+
+    return redirect("/admin-contacts")
+
+
+# ==========================================================
 # APPROVE PROVIDER
 # ==========================================================
 
 @app.route("/approve-provider/<int:id>")
 def approve_provider(id):
 
-    if "admin" not in session:
-        return redirect("/admin-login")
-
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        UPDATE providers
-        SET status='Approved'
-        WHERE id=?
-    """, (id,))
+    cursor.execute(
+        "UPDATE providers SET status=? WHERE id=?",
+        ("Approved", id)
+    )
 
     conn.commit()
     conn.close()
 
-    flash(
-        "Provider Approved Successfully.",
-        "success"
-    )
+    flash("Provider Approved Successfully!", "success")
 
     return redirect("/admin-dashboard")
-
 
 # ==========================================================
 # DELETE PROVIDER
@@ -2146,19 +2420,16 @@ def approve_booking(id):
 
     cursor.execute("""
         UPDATE bookings
-        SET status='Approved'
-        WHERE id=?
-    """, (id,))
+        SET status = ?
+        WHERE id = ?
+    """, ("Approved", id))
 
     conn.commit()
     conn.close()
 
-    flash(
-        "Booking Approved.",
-        "success"
-    )
+    flash("Booking Approved Successfully!", "success")
 
-    return redirect("/admin-dashboard")
+    return redirect("/admin-bookings")
 
 
 # ==========================================================
@@ -2218,6 +2489,36 @@ def delete_booking(id):
     )
 
     return redirect("/admin-dashboard")
+
+# ==========================================================
+# CUSTOMER MANAGEMENT
+# ==========================================================
+
+@app.route("/admin-customers")
+def admin_customers():
+
+    if not admin_logged_in():
+        flash("Please login first.", "danger")
+        return redirect("/admin-login")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM customers
+        ORDER BY id DESC
+    """)
+
+    customers = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "customer_management.html",
+        customers=customers
+    )
+
 
 
 # ==========================================================
@@ -2534,17 +2835,20 @@ def health():
 
 
 # ==========================================================
-# RUN APPLICATION
+# START APPLICATION
 # ==========================================================
 
 if __name__ == "__main__":
 
+    # Create all database tables
+    create_tables()
+
+    # Secret key for session & flash messages
+    app.secret_key = "eventbooking123"
+
     app.run(
-
         host="127.0.0.1",
-
         port=5000,
-
         debug=True
-
+    
     )

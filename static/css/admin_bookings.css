@@ -1,0 +1,330 @@
+/* ===================================
+   ADMIN BOOKINGS PAGE
+=================================== */
+
+body{
+    margin:0;
+    padding:0;
+    background:#f4f7fc;
+    font-family:'Poppins',sans-serif;
+}
+
+/* ===================================
+   HEADER
+=================================== */
+
+header{
+
+    background:#0f172a;
+
+    color:#fff;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:20px 50px;
+
+    box-shadow:0 6px 15px rgba(0,0,0,.15);
+
+}
+
+header h1{
+
+    margin:0;
+
+    font-size:42px;
+
+    font-weight:700;
+
+}
+
+header nav{
+
+    display:flex;
+
+    gap:25px;
+
+}
+
+header nav a{
+
+    color:#fff;
+
+    text-decoration:none;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+header nav a:hover{
+
+    color:#3b82f6;
+
+}
+
+/* ===================================
+   CONTAINER
+=================================== */
+
+.container{
+
+    width:95%;
+
+    margin:40px auto;
+
+}
+
+/* ===================================
+   PAGE TITLE
+=================================== */
+
+.container h2{
+
+    color:#0f172a;
+
+    font-size:32px;
+
+    margin-bottom:10px;
+
+}
+
+.container p{
+
+    color:#666;
+
+    margin-bottom:30px;
+
+}
+
+/* ===================================
+   TABLE
+=================================== */
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    background:#fff;
+
+    border-radius:15px;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+}
+
+th{
+
+    background:#2563eb;
+
+    color:#fff;
+
+    padding:18px;
+
+    text-align:center;
+
+    font-size:16px;
+
+}
+
+td{
+
+    padding:18px;
+
+    text-align:center;
+
+    border-bottom:1px solid #eee;
+
+    font-size:15px;
+
+}
+
+tr:hover{
+
+    background:#f8fbff;
+
+}
+
+/* ===================================
+   STATUS
+=================================== */
+
+.status-approved{
+
+    background:#dcfce7;
+
+    color:#15803d;
+
+    padding:8px 14px;
+
+    border-radius:20px;
+
+    font-weight:600;
+
+}
+
+.status-pending{
+
+    background:#fef3c7;
+
+    color:#b45309;
+
+    padding:8px 14px;
+
+    border-radius:20px;
+
+    font-weight:600;
+
+}
+
+.status-rejected{
+
+    background:#fee2e2;
+
+    color:#dc2626;
+
+    padding:8px 14px;
+
+    border-radius:20px;
+
+    font-weight:600;
+
+}
+
+/* ===================================
+   ACTION BUTTONS
+=================================== */
+
+.actions{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:10px;
+
+}
+
+.actions a{
+
+    text-decoration:none;
+
+    color:#fff;
+
+    padding:8px 16px;
+
+    border-radius:8px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.approve{
+
+    background:#22c55e;
+
+}
+
+.approve:hover{
+
+    background:#16a34a;
+
+}
+
+.reject{
+
+    background:#f59e0b;
+
+}
+
+.reject:hover{
+
+    background:#d97706;
+
+}
+
+.delete{
+
+    background:#ef4444;
+
+}
+
+.delete:hover{
+
+    background:#dc2626;
+
+}
+
+/* ===================================
+   SUCCESS MESSAGE
+=================================== */
+
+.flash-success{
+
+    background:#dcfce7;
+
+    color:#15803d;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+
+}
+
+/* ===================================
+   RESPONSIVE
+=================================== */
+
+@media(max-width:992px){
+
+table{
+
+    display:block;
+
+    overflow-x:auto;
+
+}
+
+header{
+
+    flex-direction:column;
+
+    gap:20px;
+
+    text-align:center;
+
+}
+
+header nav{
+
+    flex-wrap:wrap;
+
+    justify-content:center;
+
+}
+
+.actions{
+
+    flex-direction:column;
+
+}
+
+}

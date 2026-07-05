@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Customer Support</title>
+
+    <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}"
+          type="image/x-icon">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/customer_support.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/animations.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chatbot_button.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/chat_widget.css') }}">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body>
+
+<div class="support-container fade-in">
+
+    <h1>🎧 Customer Support</h1>
+
+    <p class="subtitle">
+        We're here to help you with your bookings and event-related questions.
+    </p>
+
+    <div class="support-cards">
+
+        <div class="card">
+
+            <h3>📞 Call Us</h3>
+
+            <p>+91 9876543210</p>
+
+            <small>Monday - Saturday (9 AM - 7 PM)</small>
+
+        </div>
+
+        <div class="card">
+
+            <h3>📧 Email</h3>
+
+            <p>support@eventbooking.com</p>
+
+            <small>Response within 24 hours</small>
+
+        </div>
+
+        <div class="card">
+
+            <h3>💬 Live Chat</h3>
+
+            <p>Use our AI Assistant</p>
+
+            <small>Available 24×7</small>
+
+        </div>
+
+    </div>
+
+    <div class="support-form">
+
+        <h2>Submit a Support Request</h2>
+
+        <form action="/customer-support" method="POST">
+
+            <input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                required>
+
+            <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                required>
+
+            <input
+                type="text"
+                name="subject"
+                placeholder="Subject"
+                required>
+
+            <textarea
+                name="message"
+                rows="6"
+                placeholder="Describe your problem..."
+                required></textarea>
+
+            <button type="submit">
+                Submit Request
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="faq">
+
+        <h2>Frequently Asked Questions</h2>
+
+        <div class="faq-item">
+
+            <h3>How do I book an event?</h3>
+
+            <p>
+                Go to the Book Event page, select a provider,
+                choose your date and submit the booking.
+            </p>
+
+        </div>
+
+        <div class="faq-item">
+
+            <h3>How can I cancel my booking?</h3>
+
+            <p>
+                Visit Booking History and choose the booking you
+                wish to cancel.
+            </p>
+
+        </div>
+
+        <div class="faq-item">
+
+            <h3>How do I contact a provider?</h3>
+
+            <p>
+                Open the provider profile and use the available
+                contact information.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="back-btn">
+
+        <a href="/customer-dashboard">
+
+            <button type="button">
+                ← Back to Dashboard
+            </button>
+
+        </a>
+
+    </div>
+
+</div>
+
+{% include "chat_widget.html" %}
+
+<a href="/chat" class="chatbot-button">
+    💬
+</a>
+
+<script src="{{ url_for('static', filename='js/chat_widget.js') }}"></script>
+
+<!-- Flash Popup -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+
+            <script>
+
+                Swal.fire({
+
+                    icon: "{{ 'success' if category=='success' else 'error' if category=='danger' else 'info' }}",
+
+                    title: "{{ message }}",
+
+                    confirmButtonColor: "#2563eb"
+
+                });
+
+            </script>
+
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+</body>
+
+</html>

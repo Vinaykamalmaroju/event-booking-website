@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Event Booking Website</title>
+    <title>Eventora | Home</title>
 
     <link rel="preconnect"
           href="https://fonts.googleapis.com">
@@ -19,6 +19,11 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
           rel="stylesheet">
+
+ <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}"
+          type="image/x-icon">
+
 
   <link rel="stylesheet"
       href="{{ url_for('static', filename='css/common.css') }}">
@@ -38,35 +43,74 @@ href="{{ url_for('static', filename='css/chatbot_button.css') }}">
 
 <header>
 
-    <h1>Event Booking Website</h1>
+    <div class="logo">
+        <a href="/">Eventora</a>
+    </div>
 
     <nav>
 
         <a href="/">Home</a>
 
-        <a href="/booking">Book Event</a>
-        
-        <a href="/track-booking">Track Booking</a>
+        <a href="/booking">Book</a>
+
+        <a href="/booking-history">Track</a>
 
         <a href="/payment">Payment</a>
 
         <a href="/contact">Contact</a>
 
-        <a href="/provider-register">Become a Provider</a>
+        <!-- Services Dropdown -->
+        <div class="dropdown">
 
-        <a href="/provider-login">Provider Login</a>
+            <button class="dropbtn">
+                Services ▼
+            </button>
 
-        <a href="/providers">View Providers</a>
+            <div class="dropdown-content">
 
-        <a href="/booking-history">Booking History</a>
+                <a href="/providers">
+                    View Providers
+                </a>
 
-        <a href="/customer-register">Customer Register</a>
+                <a href="/provider-register">
+                    Become a Provider
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Login Dropdown -->
+        <div class="dropdown">
+
+            <button class="dropbtn">
+                Login ▼
+            </button>
+
+            <div class="dropdown-content">
+
+                <a href="/provider-login">
+                    Provider Login
+                </a>
+
+                <a href="/customer-register">
+                    Customer Register
+                </a>
+
+                <a href="/booking-history">
+                    Booking History
+                </a>
+
+            </div>
+
+        </div>
 
     </nav>
 
 </header>
 
 <section class="hero fade-in">
+
 
     <h2>
 
@@ -412,7 +456,7 @@ No Providers Found
 
     <p>
 
-        © 2026 Event Booking Website | Designed for Major Project
+        © 2026 Eventora | Designed for Event Booking & Management
 
     </p>
 

@@ -4,10 +4,13 @@
 <head>
 
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Provider Registration</title>
+    <title>Eventora | Provider Registration</title>
+
+    <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}"
+          type="image/x-icon">
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/common.css') }}">
@@ -24,7 +27,7 @@
 
 <header>
 
-    <h1>Event Booking Website</h1>
+    <h1>Eventora</h1>
 
     <nav>
 
@@ -42,31 +45,11 @@
 
     <h2>Become a Service Provider</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-
-        {% for category, message in messages %}
-
-            <div style="
-                padding:15px;
-                margin-bottom:20px;
-                background:#ffeaea;
-                border:1px solid red;
-                color:red;
-                font-weight:bold;
-            ">
-                {{ message }}
-            </div>
-
-        {% endfor %}
-
-    {% endif %}
-{% endwith %}
-
     <p>
         Register yourself and start receiving event bookings.
     </p>
 
+    <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
 
@@ -116,17 +99,11 @@
             <option value="">Select Your Service</option>
 
             <option value="Photography">Photography</option>
-
             <option value="Decoration">Decoration</option>
-
             <option value="Catering">Catering</option>
-
             <option value="DJ">DJ</option>
-
             <option value="Makeup">Makeup</option>
-
             <option value="Videography">Videography</option>
-
             <option value="Venue">Venue</option>
 
         </select>
@@ -146,30 +123,31 @@
         <input
             type="number"
             name="basic_package"
-            placeholder="Basic Package Price"
+            placeholder="Basic Package Price (₹)"
             required>
 
         <input
             type="number"
             name="premium_package"
-            placeholder="Premium Package Price"
+            placeholder="Premium Package Price (₹)"
             required>
 
         <input
             type="number"
             name="luxury_package"
-            placeholder="Luxury Package Price"
+            placeholder="Luxury Package Price (₹)"
             required>
 
-        <label><strong>Upload Profile Image</strong></label>
+        <label class="upload-label">
+            Upload Profile Image
+        </label>
 
         <input
             type="file"
             name="image"
             accept="image/*">
 
-        <button
-            type="submit">
+        <button type="submit">
 
             Register as Provider
 
@@ -177,7 +155,7 @@
 
     </form>
 
-    <p style="text-align:center;margin-top:20px;">
+    <div class="login-link">
 
         Already Registered?
 
@@ -187,12 +165,11 @@
 
         </a>
 
-    </p>
+    </div>
 
 </section>
 
-<a href="/chat"
-class="chatbot-button">
+<a href="/chat" class="chatbot-button">
 
 💬
 

@@ -1,0 +1,206 @@
+/* ==========================================================
+   ADMIN CONTACTS PAGE
+========================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f4f7fb;
+    color:#333;
+}
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+header{
+    background:#1565d8;
+    color:white;
+    padding:20px 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+header h1{
+    font-size:34px;
+}
+
+nav{
+    display:flex;
+    gap:25px;
+}
+
+nav a{
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    font-size:17px;
+    transition:.3s;
+}
+
+nav a:hover{
+    color:#ffd54f;
+}
+
+/* ==========================================================
+   MAIN CONTAINER
+========================================================== */
+
+.contacts-container{
+    width:95%;
+    max-width:1400px;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.contacts-container h2{
+    text-align:center;
+    color:#1565d8;
+    margin-bottom:10px;
+    font-size:32px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#666;
+    margin-bottom:30px;
+    font-size:18px;
+}
+
+/* ==========================================================
+   FLASH MESSAGE
+========================================================== */
+
+.alert{
+    padding:15px;
+    margin-bottom:20px;
+    border-radius:8px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.alert.success{
+    background:#d4edda;
+    color:#155724;
+    border:1px solid #28a745;
+}
+
+.alert.error,
+.alert.danger{
+    background:#f8d7da;
+    color:#721c24;
+    border:1px solid #dc3545;
+}
+
+/* ==========================================================
+   TABLE
+========================================================== */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+thead{
+    background:#1565d8;
+    color:white;
+}
+
+thead th{
+    padding:16px;
+    text-align:left;
+}
+
+tbody tr:nth-child(even){
+    background:#f8f9fa;
+}
+
+tbody tr:hover{
+    background:#eef5ff;
+}
+
+tbody td{
+    padding:15px;
+    border-bottom:1px solid #ddd;
+    vertical-align:top;
+}
+
+.message{
+    max-width:400px;
+    word-wrap:break-word;
+    white-space:pre-wrap;
+}
+
+/* ==========================================================
+   DELETE BUTTON
+========================================================== */
+
+.delete-btn{
+    display:inline-block;
+    padding:8px 18px;
+    background:#dc3545;
+    color:white;
+    text-decoration:none;
+    border-radius:6px;
+    font-weight:bold;
+    transition:.3s;
+}
+
+.delete-btn:hover{
+    background:#b02a37;
+}
+
+/* ==========================================================
+   NO DATA
+========================================================== */
+
+.no-data{
+    text-align:center;
+    padding:40px;
+    font-size:22px;
+    color:#777;
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media(max-width:900px){
+
+    header{
+        flex-direction:column;
+        text-align:center;
+        gap:15px;
+    }
+
+    nav{
+        justify-content:center;
+        flex-wrap:wrap;
+    }
+
+    .contacts-container{
+        width:98%;
+        padding:20px;
+    }
+
+    table{
+        display:block;
+        overflow-x:auto;
+        white-space:nowrap;
+    }
+
+    .message{
+        min-width:250px;
+    }
+}

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin - Contact Messages</title>
+
+    <link rel="icon"
+          href="{{ url_for('static', filename='favicon.ico') }}"
+          type="image/x-icon">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/common.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin_contacts.css') }}">
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>📩 Contact Messages</h1>
+
+    <nav>
+
+        <a href="/admin-dashboard">Dashboard</a>
+
+        <a href="/logout">Logout</a>
+
+    </nav>
+
+</header>
+
+<div class="container">
+
+    <h2>Customer Contact Messages</h2>
+
+    {% if contacts %}
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Name</th>
+
+                <th>Email</th>
+
+                <th>Phone</th>
+
+                <th>Message</th>
+
+                <th>Action</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for contact in contacts %}
+
+            <tr>
+
+                <td>{{ contact[0] }}</td>
+
+                <td>{{ contact[1] }}</td>
+
+                <td>{{ contact[2] }}</td>
+
+                <td>{{ contact[3] }}</td>
+
+                <td class="message">
+
+                    {{ contact[4] }}
+
+                </td>
+
+                <td>
+
+                    <a href="/delete-contact/{{ contact[0] }}"
+                       class="delete-btn"
+                       onclick="return confirm('Are you sure you want to delete this message?')">
+
+                        Delete
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="empty">
+
+        No contact messages found.
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+
+</html>
